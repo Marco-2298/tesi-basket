@@ -1,0 +1,96 @@
+{
+  "model_type_metadata": "models\\player_model_v4_backup_20261011T093526Z\\cache\\basketball-player-detection-3-ycjdo\\4\\model_type.json",
+  "model_type": {
+    "project_task_type": "object-detection",
+    "model_type": "yolov11",
+    "model_id": "basketball-player-detection-3-ycjdo/4",
+    "model_variant": "yolov11-s"
+  },
+  "weights": "models\\player_model_v4_backup_20261011T093526Z\\cache\\models-cache\\v2-basketball-player-detection-3-ycjdo-4-074fcd1acb8dc32a0f77a0a0f459399b\\341349e9c9f96e1bbe9f80d3dd33e463\\weights.onnx",
+  "weights_sha256": "05f8a20b0e74efae6a103befd4ebfb0f70d0bb80adc1e9dfd8cb591ed47cd95b",
+  "backup_files_verified": [
+    {
+      "path": "cache/usage.db",
+      "valid": true
+    },
+    {
+      "path": "cache/shared-blobs/.e381bea143488cfbd44ba37b3a43ac18.lock",
+      "valid": true
+    },
+    {
+      "path": "cache/shared-blobs/.54e584eddfd7e14c6d2695c7f8345156.lock",
+      "valid": true
+    },
+    {
+      "path": "cache/shared-blobs/e381bea143488cfbd44ba37b3a43ac18",
+      "valid": true
+    },
+    {
+      "path": "cache/shared-blobs/da1f1c21d4c01e115ed314e481ee3b70",
+      "valid": true
+    },
+    {
+      "path": "cache/shared-blobs/.da1f1c21d4c01e115ed314e481ee3b70.lock",
+      "valid": true
+    },
+    {
+      "path": "cache/shared-blobs/54e584eddfd7e14c6d2695c7f8345156",
+      "valid": true
+    },
+    {
+      "path": "cache/auto-resolution-cache/.8f571f4137be44af8824865cc5e70c686c6a02ee61b16531e529a86ca91fdc68.json.lock",
+      "valid": true
+    },
+    {
+      "path": "cache/auto-resolution-cache/8f571f4137be44af8824865cc5e70c686c6a02ee61b16531e529a86ca91fdc68.json",
+      "valid": true
+    },
+    {
+      "path": "cache/models-cache/v2-basketball-player-detection-3-ycjdo-4-074fcd1acb8dc32a0f77a0a0f459399b/.341349e9c9f96e1bbe9f80d3dd33e463.materialization.lock",
+      "valid": true
+    },
+    {
+      "path": "cache/models-cache/v2-basketball-player-detection-3-ycjdo-4-074fcd1acb8dc32a0f77a0a0f459399b/341349e9c9f96e1bbe9f80d3dd33e463/.model_config.json.lock",
+      "valid": true
+    },
+    {
+      "path": "cache/models-cache/v2-basketball-player-detection-3-ycjdo-4-074fcd1acb8dc32a0f77a0a0f459399b/341349e9c9f96e1bbe9f80d3dd33e463/.weights.onnx.lock",
+      "valid": true
+    },
+    {
+      "path": "cache/models-cache/v2-basketball-player-detection-3-ycjdo-4-074fcd1acb8dc32a0f77a0a0f459399b/341349e9c9f96e1bbe9f80d3dd33e463/model_config.json",
+      "valid": true
+    },
+    {
+      "path": "cache/models-cache/v2-basketball-player-detection-3-ycjdo-4-074fcd1acb8dc32a0f77a0a0f459399b/341349e9c9f96e1bbe9f80d3dd33e463/inference_config.json",
+      "valid": true
+    },
+    {
+      "path": "cache/models-cache/v2-basketball-player-detection-3-ycjdo-4-074fcd1acb8dc32a0f77a0a0f459399b/341349e9c9f96e1bbe9f80d3dd33e463/.inference_config.json.lock",
+      "valid": true
+    },
+    {
+      "path": "cache/models-cache/v2-basketball-player-detection-3-ycjdo-4-074fcd1acb8dc32a0f77a0a0f459399b/341349e9c9f96e1bbe9f80d3dd33e463/weights.onnx",
+      "valid": true
+    },
+    {
+      "path": "cache/models-cache/v2-basketball-player-detection-3-ycjdo-4-074fcd1acb8dc32a0f77a0a0f459399b/341349e9c9f96e1bbe9f80d3dd33e463/class_names.txt",
+      "valid": true
+    },
+    {
+      "path": "cache/models-cache/v2-basketball-player-detection-3-ycjdo-4-074fcd1acb8dc32a0f77a0a0f459399b/341349e9c9f96e1bbe9f80d3dd33e463/.class_names.txt.lock",
+      "valid": true
+    },
+    {
+      "path": "cache/basketball-player-detection-3-ycjdo/4/model_type.json",
+      "valid": true
+    }
+  ],
+  "all_backup_hashes_verified": true,
+  "runtime_restore_verified": false,
+  "point_targets": 100,
+  "tasks": 295,
+  "onnx_adapter_runtime_verified": true,
+  "onnx_adapter_runtime_evidence": "outputs/detector_check/20261015T113018_02049362/evidence.json",
+  "original_roboflow_runtime_restore_verified": false
+}

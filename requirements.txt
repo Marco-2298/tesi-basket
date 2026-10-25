@@ -1,0 +1,12 @@
+ultralytics
+trackers
+supervision
+roboflow
+pycocotools
+scikit-learn
+scipy
+pandas
+matplotlib
+opencv-python
+inference
+git+https://github.com/roboflow/sports.git@feat/basketball

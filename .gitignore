@@ -1,0 +1,37 @@
+Set-Content -Path "F:\Tesi Basket\.gitignore" -Encoding UTF8 -Value @'
+# ambiente e cache
+.venv-eval/
+__pycache__/
+_cache/
+.ipynb_checkpoints/
+
+# file pesanti o rigenerabili
+*.zip
+*.pt
+*.pth
+*.onnx
+*.mp4
+*.mov
+*.npy
+*.npz
+
+# dati, modelli e output (stanno su Drive)
+videos/
+models/
+basketball_player_detection_v18/
+datasets/
+outputs/
+demo/
+experiments/**/runs/
+experiments/**/tracker_outputs/
+experiments/**/detections/
+
+# archivi e cestino
+_archivio/
+_da_cancellare/
+
+# elenchi temporanei
+elenco_file.csv
+dimensioni_cartelle.csv
+'@
+"gitignore aggiornato"

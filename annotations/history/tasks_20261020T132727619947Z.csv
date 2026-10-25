@@ -1,0 +1,41 @@
+﻿clip_id,frame,point_target,sequence_id,target_count,required_player_ids,instruction
+clip_01,0,1,,1,,"Frame già annotato: lavoro conservato, nessun punto aggiuntivo richiesto"
+clip_01,8,1,,1,,"Frame già annotato: lavoro conservato, nessun punto aggiuntivo richiesto"
+clip_01,15,1,,1,,"Frame già annotato: lavoro conservato, nessun punto aggiuntivo richiesto"
+clip_01,23,1,,1,,"Frame già annotato: lavoro conservato, nessun punto aggiuntivo richiesto"
+clip_01,26,1,seq1,2,p04;p06,Segui SOLO gli stessi 2 giocatori per 8 frame; scegli le identità nel pulsante dedicato
+clip_01,27,0,seq1,2,p04;p06,Segui SOLO gli stessi 2 giocatori per 8 frame; scegli le identità nel pulsante dedicato
+clip_01,28,0,seq1,2,p04;p06,Segui SOLO gli stessi 2 giocatori per 8 frame; scegli le identità nel pulsante dedicato
+clip_01,29,0,seq1,2,p04;p06,Segui SOLO gli stessi 2 giocatori per 8 frame; scegli le identità nel pulsante dedicato
+clip_01,30,0,seq1,2,p04;p06,Segui SOLO gli stessi 2 giocatori per 8 frame; scegli le identità nel pulsante dedicato
+clip_01,31,0,seq1,2,p04;p06,Segui SOLO gli stessi 2 giocatori per 8 frame; scegli le identità nel pulsante dedicato
+clip_01,32,0,seq1,2,p04;p06,Segui SOLO gli stessi 2 giocatori per 8 frame; scegli le identità nel pulsante dedicato
+clip_01,33,0,seq1,2,p04;p06,Segui SOLO gli stessi 2 giocatori per 8 frame; scegli le identità nel pulsante dedicato
+clip_03,28,1,,5,,Annota SOLO 5 giocatori; puoi salvare non annotabile senza coordinate
+clip_03,112,1,,5,,Annota SOLO 5 giocatori; puoi salvare non annotabile senza coordinate
+clip_04,26,1,,5,,Annota SOLO 5 giocatori; puoi salvare non annotabile senza coordinate
+clip_04,106,1,,5,,Annota SOLO 5 giocatori; puoi salvare non annotabile senza coordinate
+clip_05,61,1,,5,,Annota SOLO 5 giocatori; puoi salvare non annotabile senza coordinate
+clip_05,100,0,seq1,2,p05;p04,Segui SOLO gli stessi 2 giocatori per 8 frame; scegli le identità nel pulsante dedicato
+clip_05,101,0,seq1,2,p05;p04,Segui SOLO gli stessi 2 giocatori per 8 frame; scegli le identità nel pulsante dedicato
+clip_05,102,0,seq1,2,p05;p04,Segui SOLO gli stessi 2 giocatori per 8 frame; scegli le identità nel pulsante dedicato
+clip_05,103,0,seq1,2,p05;p04,Segui SOLO gli stessi 2 giocatori per 8 frame; scegli le identità nel pulsante dedicato
+clip_05,104,0,seq1,2,p05;p04,Segui SOLO gli stessi 2 giocatori per 8 frame; scegli le identità nel pulsante dedicato
+clip_05,105,0,seq1,2,p05;p04,Segui SOLO gli stessi 2 giocatori per 8 frame; scegli le identità nel pulsante dedicato
+clip_05,106,0,seq1,2,p05;p04,Segui SOLO gli stessi 2 giocatori per 8 frame; scegli le identità nel pulsante dedicato
+clip_05,107,0,seq1,2,p05;p04,Segui SOLO gli stessi 2 giocatori per 8 frame; scegli le identità nel pulsante dedicato
+clip_05,244,1,,5,,Annota SOLO 5 giocatori; puoi salvare non annotabile senza coordinate
+clip_06,60,1,,5,,Annota SOLO 5 giocatori; puoi salvare non annotabile senza coordinate
+clip_06,241,1,,5,,Annota SOLO 5 giocatori; puoi salvare non annotabile senza coordinate
+clip_07,29,1,,5,,Annota SOLO 5 giocatori; puoi salvare non annotabile senza coordinate
+clip_07,114,1,,5,,Annota SOLO 5 giocatori; puoi salvare non annotabile senza coordinate
+clip_08,37,1,,5,,Annota SOLO 5 giocatori; puoi salvare non annotabile senza coordinate
+clip_08,60,0,seq1,2,p01;p02,Segui SOLO gli stessi 2 giocatori per 8 frame; scegli le identità nel pulsante dedicato
+clip_08,61,0,seq1,2,p01;p02,Segui SOLO gli stessi 2 giocatori per 8 frame; scegli le identità nel pulsante dedicato
+clip_08,62,0,seq1,2,p01;p02,Segui SOLO gli stessi 2 giocatori per 8 frame; scegli le identità nel pulsante dedicato
+clip_08,63,0,seq1,2,p01;p02,Segui SOLO gli stessi 2 giocatori per 8 frame; scegli le identità nel pulsante dedicato
+clip_08,64,0,seq1,2,p01;p02,Segui SOLO gli stessi 2 giocatori per 8 frame; scegli le identità nel pulsante dedicato
+clip_08,65,0,seq1,2,p01;p02,Segui SOLO gli stessi 2 giocatori per 8 frame; scegli le identità nel pulsante dedicato
+clip_08,66,0,seq1,2,p01;p02,Segui SOLO gli stessi 2 giocatori per 8 frame; scegli le identità nel pulsante dedicato
+clip_08,67,0,seq1,2,p01;p02,Segui SOLO gli stessi 2 giocatori per 8 frame; scegli le identità nel pulsante dedicato
+clip_08,149,1,,5,,Annota SOLO 5 giocatori; puoi salvare non annotabile senza coordinate

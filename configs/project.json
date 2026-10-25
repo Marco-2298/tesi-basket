@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "clips_dir": "videos",
+  "detection_test_dir": "basketball_player_detection_v18/test",
+  "weights": "models/player_model_v4_backup_20261011T093526Z/cache/models-cache/v2-basketball-player-detection-3-ycjdo-4-074fcd1acb8dc32a0f77a0a0f459399b/341349e9c9f96e1bbe9f80d3dd33e463/weights.onnx",
+  "model_variant": "yolov11-s",
+  "model_id": "basketball-player-detection-3-ycjdo/4",
+  "manifest": "annotations/manifest.csv",
+  "annotations": "annotations/annotations.csv",
+  "tasks": "annotations/tasks.csv",
+  "confidence": 0.4,
+  "nms_iou": 0.7,
+  "max_gap_candidates": [
+    0,
+    2,
+    5,
+    10
+  ],
+  "match_gate_px": 80.0,
+  "player_classes": [
+    "player",
+    "player-in-possession",
+    "player-jump-shot",
+    "player-layup-dunk",
+    "player-shot-block"
+  ]
+}

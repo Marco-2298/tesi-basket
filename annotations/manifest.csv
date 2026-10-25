@@ -1,0 +1,8 @@
+﻿clip_id,video,fps,frames,width,height,duration_s,split,shot_type,shot_verified,tracks_csv,positions_csv,homographies_json
+clip_01,videos/clip_01.mov,28.99728997289973,107,854,480,3.69,validation,,,,,
+clip_03,videos/clip_03.mov,28.992460589444825,141,854,480,4.863333333333333,validation,,,,,
+clip_04,videos/clip_04.mov,28.997093023255815,133,854,480,4.586666666666667,test,,,,,
+clip_05,videos/clip_05.mov,29.00473933649289,306,854,480,10.55,test,,,,,
+clip_06,videos/clip_06.mov,28.99663946231397,302,854,480,10.415000000000001,test,,,,,
+clip_07,videos/clip_07.mov,28.993288590604028,144,854,480,4.966666666666667,validation,,,,,
+clip_08,videos/clip_08.mov,29.007238883143742,187,854,480,6.446666666666667,test,,,,,
