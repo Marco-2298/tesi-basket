@@ -3,7 +3,7 @@
 **Tecniche di Computer Vision e Deep Learning per la detection e il tracking durante le partite di basket**
 
 Tesi di Laurea Magistrale in Ingegneria Informatica – Curriculum Artificial Intelligence and Machine Learning
-Autore: Marco · Relatore: _da completare_ · Università: _da completare_ · Consegna prevista: 4 dicembre 2026
+Autore: Marco · Relatore: Giuseppe Sansonetti · Università: Università Roma 3 ·
 
 ---
 
