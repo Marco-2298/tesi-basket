@@ -1,37 +1,41 @@
-Set-Content -Path "F:\Tesi Basket\.gitignore" -Encoding UTF8 -Value @'
-# ambiente e cache
-.venv-eval/
+# ---- ambiente e cache ----
+.venv*/
 __pycache__/
 _cache/
 .ipynb_checkpoints/
+Thumbs.db
+desktop.ini
 
-# file pesanti o rigenerabili
+# ---- file pesanti o rigenerabili (video NBA mai su GitHub) ----
+*.mp4
+*.mov
+*.avi
 *.zip
 *.pt
 *.pth
 *.onnx
-*.mp4
-*.mov
 *.npy
 *.npz
 
-# dati, modelli e output (stanno su Drive)
+# ---- dati e modelli (restano in locale e su Drive) ----
 videos/
 models/
-basketball_player_detection_v18/
 datasets/
+basketball_player_detection_v18/
 outputs/
 demo/
+
+# ---- esperimenti: si pubblicano CSV, JSON e figure; non run e file intermedi ----
 experiments/**/runs/
 experiments/**/tracker_outputs/
 experiments/**/detections/
+experiments/E1_detection/preds_*.json
 
-# archivi e cestino
+# ---- archivi, cestino, elenchi temporanei ----
 _archivio/
 _da_cancellare/
-
-# elenchi temporanei
 elenco_file.csv
 dimensioni_cartelle.csv
-'@
-"gitignore aggiornato"
+sync_prova.txt
+solo_in_vecchia.txt
+git_status.txt

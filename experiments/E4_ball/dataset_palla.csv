@@ -1,0 +1,5 @@
+fonte,split,immagini,palle
+clip NBA (tue),test_own,107,83
+clip NBA (tue),train,312,243
+v18,test_v18,94,88
+v18,train,560,520

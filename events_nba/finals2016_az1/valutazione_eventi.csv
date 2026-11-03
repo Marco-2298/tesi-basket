@@ -1,0 +1,7 @@
+clip,tipo,rilevati,veri,corretti,precisione,richiamo
+finals2016_az1,passaggio,3,6,3,1.0,0.5
+finals2016_az1,palla_rubata,0,0,0,,
+finals2016_az1,tiro_segnato,0,0,0,,
+finals2016_az1,tiro_sbagliato,3,3,3,1.0,1.0
+finals2016_az1,rimbalzo,2,2,2,1.0,1.0
+finals2016_az1,tiro (tentativo),3,3,3,1.0,1.0

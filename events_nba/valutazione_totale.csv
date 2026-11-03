@@ -1,0 +1,8 @@
+tipo,rilevati,veri,corretti,precisione,richiamo,F1
+passaggio,9,16,7,0.78,0.44,0.56
+palla_rubata,0,0,0,,,
+tiro_segnato,3,3,2,0.67,0.67,0.67
+tiro_sbagliato,4,4,4,1.0,1.0,1.0
+rimbalzo,3,3,3,1.0,1.0,1.0
+tiro (tentativo),7,7,6,0.86,0.86,0.86
+TUTTI GLI EVENTI,19,26,16,0.84,0.62,0.71

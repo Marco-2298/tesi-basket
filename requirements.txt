@@ -1,12 +1,17 @@
-ultralytics
-trackers
-supervision
-roboflow
-pycocotools
-scikit-learn
-scipy
+# Notebook eseguiti su Google Colab (GPU T4 / L4, Python 3.12-3.13).
+# Ogni notebook installa da solo quello che gli serve nella prima cella.
+numpy
 pandas
+scipy
 matplotlib
 opencv-python
-inference
-git+https://github.com/roboflow/sports.git@feat/basketball
+tqdm
+torch
+ultralytics              # YOLO11 / RT-DETR (E1, E4, eventi)
+trackers                 # SORT, ByteTrack, OC-SORT, BoT-SORT, C-BIoU + valutazione MOT (E2)
+supervision==0.30.9
+inference                # modelli Roboflow: detector giocatori e keypoint del campo (notebook 09)
+roboflow                 # download del dataset v18 (E1, E4)
+sports @ git+https://github.com/roboflow/sports.git@feat/basketball   # geometria del campo NBA
+# SAM2 real-time: clonato e installato dal notebook 09/11
+# (https://github.com/Gy920/segment-anything-2-real-time, commit e3623cda)

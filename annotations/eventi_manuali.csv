@@ -1,0 +1,67 @@
+clip,tipo,tempo_s,da,a,note
+finals2016_az1,passaggio,1.0,4,5,
+finals2016_az1,tiro_sbagliato,1.8,5,,
+finals2016_az1,passaggio,18.2,,7052,passatore non rilevato
+finals2016_az1,passaggio,20.4,7052,,ricevitore non rilevato
+finals2016_az1,tiro_sbagliato,32.6,7056,,
+finals2016_az1,rimbalzo,34.2,,9120,
+finals2016_az1,passaggio,37.0,9120,7051,
+finals2016_az1,passaggio,37.7,7051,9120,
+finals2016_az1,tiro_sbagliato,39.1,9120,,stoppato
+finals2016_az1,rimbalzo,39.5,,8082,
+finals2016_az1,passaggio,46.6,8082,8088,passaggio consegnato
+finals2016_az2,passaggio,8.6,5,4,
+finals2016_az2,passaggio,11.0,,5,passatore non rilevato
+finals2016_az2,tiro_sbagliato,14.6,5,,
+finals2016_az2,rimbalzo,17.1,,1033,
+finals2016_az2,passaggio,18.7,1033,2047,
+finals2016_az2,passaggio,24.1,,,pass e ric non rilevati
+finals2016_az2,passaggio,26.1,,2065,passatore non rilevato
+finals2016_az3,passaggio,32.7,2007,2002,
+finals2016_az3,passaggio,35.8,,,pass e ric non rilevati
+finals2016_az3,passaggio,59.6,5049,5050,
+finals2016_az4,tiro_segnato,26.3,3021,,
+finals2016_az4,passaggio,30.6,3017,3028,
+finals2016_az4,passaggio,36.2,5052,5058,
+finals2016_az4,passaggio,37.3,5058,5054,
+finals2016_az4,tiro_segnato,40.3,5054,,
+finals2016_az4,passaggio,45.4,,6076,passatore non rilevato
+finals2016_az5,passaggio,41.5,,,pass e ric non rilevati
+finals2016_az5,tiro_segnato,56.6,4070,,rilevato da tabellone
+finals2016_az6,palla_rubata,10.3,,1383,
+finals2016_az6,passaggio,17.0,2397,2396,
+finals2016_az6,tiro_segnato,20.9,3420,,
+finals2016_az6,passaggio,25.5,,5440,passatore non rilevato
+finals2016_az6,passaggio,39.4,8466,,
+finals2016_az6,tiro_sbagliato,42.0,,,tiratore non rilevato
+finals2016_az6,rimbalzo,43.5,,10491,
+finals2016_az6,passaggio,44.0,10491,10490,
+finals2016_az6,palla_rubata,49.4,,10512,
+finals2016_az6,passaggio,50.8,11515,,
+finals2016_az6,passaggio,51.4,,11517,passatore non rilevato
+finals2016_az6,passaggio,52.5,11517,11515,
+finals2016_az6,tiro_segnato,54.0,12526,,
+finals2016_az6,passaggio,57.2,13538,13537,
+finals2016_test2,tiro_sbagliato,1.0,1,,
+finals2016_test2,rimbalzo,3.4,,1014,
+finals2016_test2,passaggio,4.2,1014,14161,
+finals2016_test2,tiro_segnato,6.5,14161,,
+finals2016_test2,passaggio,10.0,2034,2031,
+finals2016_test2,passaggio,11.4,2031,3042,
+finals2016_test2,passaggio,20.5,3050,3045,
+finals2016_test2,tiro_segnato,21.5,3045,,rilevato da tabellone
+finals2016_test2,passaggio,45.6,,,pass e ric non rilevati
+finals2016_test2,passaggio,47.5,9113,10119,
+finals2016_test2,tiro_segnato,48.5,10119,,
+finals2016_test1,passaggio,12.5,,5034,
+finals2016_test1,tiro_segnato,21.8,6049,,
+finals2016_test1,passaggio,23.4,,,
+finals2016_test1,passaggio,30.0,9084,9092,
+finals2016_test1,passaggio,31.4,9092,9087,
+finals2016_test1,tiro_sbagliato,32.5,9087,,
+finals2016_test1,rimbalzo,35.0,,11110,
+finals2016_test1,passaggio,40.5,12130,12126,
+finals2016_test1,passaggio,41.2,12126,12119,
+finals2016_test1,passaggio,44.0,12129,,
+finals2016_test1,passaggio,50.8,14148,14157,
+finals2016_test1,passaggio,52.7,14157,14151,

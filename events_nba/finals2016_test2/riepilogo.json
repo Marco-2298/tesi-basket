@@ -1,0 +1,17 @@
+{
+  "clip": "finals2016_test2",
+  "secondi": 60.0,
+  "tagli_scena": 14,
+  "palla_candidati_%": 60.7,
+  "palla_accettata_%": 45.0,
+  "tracce": 136,
+  "segmenti_possesso": 17,
+  "eventi_automatici": {
+    "passaggio": 4,
+    "tiro_segnato": 3,
+    "tiro_sbagliato": 1,
+    "rimbalzo": 1,
+    "palla_rubata": 1
+  },
+  "eventi_manuali": 11
+}
