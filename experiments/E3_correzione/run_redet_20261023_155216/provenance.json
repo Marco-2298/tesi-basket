@@ -1,0 +1,60 @@
+{
+  "created": "2026-10-23T15:52:18.934802",
+  "variant": "redet",
+  "gate_px": 80.0,
+  "max_gaps_main": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "max_gaps_pix": [
+    0,
+    2,
+    5,
+    10
+  ],
+  "inputs": {
+    "manifest_sam2_redet.csv": "e4214b400a9df993c1aaf495eb91f3faf2bb660113b8c52913bc2476c1676574",
+    "annotations.csv": "c42631ea64668f466941c3e12972346f15a1d4bc5430c16388f3ed7f0746b043",
+    "tasks.csv": "d5a7145dcffedc8a7d32110ba85abdfa0c50874c12a2df01f68cec9a74cb9263",
+    "clip_01": {
+      "tracks_csv": "8b667c8c5189c8bd7c3edf9b08a9d62e4e7e3a71b3dc64e6a2fbb0c3c0c9519d",
+      "positions_csv": "4965b8f5b18752fb980857f54f348554c685f5361bcfdb79ea51a44eb469931d",
+      "homographies_json": "63e3cdb49282374bafb795ca5589d2e66366297272043f4c85ebb3395d06b7a8"
+    },
+    "clip_03": {
+      "tracks_csv": "cd39443f84b9bcab01d45f98a2d338c72e0154570243aa15fd2c56b7634d6d87",
+      "positions_csv": "68d72d2e77b316df08b6dd6d54a5625f5fbfc1673c18e933ef5b0402c193cf7d",
+      "homographies_json": "4ba9d9ccf62d631edb02fed79fef73c861156b8a3b2ee51dec67b948b373991d"
+    },
+    "clip_04": {
+      "tracks_csv": "6d3cf366b3b70472a2e1282dccec0d4e9e06b31d75a65e1aa7fb04454cc17ce6",
+      "positions_csv": "77ce9720e58f54dd209f2bbe0c266251fd97c02220fdc0370a970de8f469e50a",
+      "homographies_json": "f037a83e917617507d60d7b3539d69ef002b9a9d371bb0b01efc32b22ba72e2a"
+    },
+    "clip_05": {
+      "tracks_csv": "11ee9f5e6a9600eb20cf4b79c836cf9d975b7da06e58a61893d45b6813209fa6",
+      "positions_csv": "4ca6041dbe325d61bd3c8936c48bca438b50a7d4c4197a189ee7c6529ed26857",
+      "homographies_json": "9fda333c26a85ee4ef937ddb247f1c3d7759914121ceded7bed458f9f8d16244"
+    },
+    "clip_06": {
+      "tracks_csv": "1392af838731f85915074d4ace352c8f1871a0e96e9d8064795c9c575b2885ee",
+      "positions_csv": "67b8e3947eb75a3f9474fc53e40e810bf2e87756118e9f95ed804aa78343f53d",
+      "homographies_json": "a20854fcb3e376818af2f48d1d8ac14dda590f36f03c8d87f68d365d39b8193a"
+    },
+    "clip_07": {
+      "tracks_csv": "800efb034c4efdd903ecf658d8da56352e46dd8732668cb3822e4e2c7620bb09",
+      "positions_csv": "6369a802a5afe8a3d3a0ab44df1fc3ed51ca63cffc922d3b5c225cf034c9f9c0",
+      "homographies_json": "0dfa5e8210e522f89e3e6c6d589828d736fb6b12ff55763e5809e905286e7a32"
+    },
+    "clip_08": {
+      "tracks_csv": "64424b8392a69ed4d22b7f10ddbba748e88a00ca0c46a0463d53c581c72302ea",
+      "positions_csv": "c9d675c23ed5e50c96f42d217bb49d72900d40339c7f7a866511c3dacea6a030",
+      "homographies_json": "71c5edfbdccecd6ed7a1853b8eebcea41b4c4a96effb2f7fd869ab2ebe30366c"
+    }
+  }
+}
