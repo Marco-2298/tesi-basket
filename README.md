@@ -229,22 +229,6 @@ Per rifare gli esperimenti dalla preparazione dei modelli, un ordine di riferime
 
 Non è necessario eseguire tutto dall'inizio se si dispone già di modelli, tracce e detection salvate. Alcune celle prevedono proprio il riutilizzo degli output intermedi.
 
-### Esecuzione locale
-
-Il notebook 12 e gli script di valutazione possono essere eseguiti anche in locale, con i percorsi aggiornati e le dipendenze installate:
-
-```powershell
-cd "F:\Tesi Basket"
-.\.venv-eval\Scripts\activate
-pip install -r requirements.txt
-```
-
-In VS Code selezionare come kernel l'ambiente `.venv-eval`. Il percorso e il nome dell'ambiente sono quelli utilizzati durante lo sviluppo, non requisiti del progetto.
-
-### Quando cambia il CSV degli eventi manuali
-
-Se viene modificato `annotations/eventi_manuali.csv`, non serve rigenerare detection e tracking. Occorre invece rieseguire la valutazione delle clip interessate (per esempio `test1` nel relativo notebook di `15_eventi_nba_esecuzione/`), salvare i nuovi risultati e poi aggiornare i riepiloghi complessivi e le tabelle del README. Va verificato che le celle leggano il CSV aggiornato e non un riepilogo precedente in cache.
-
 ### Hardware
 
 I test sono stati svolti principalmente su GPU T4 e L4 di Colab. La T4 è stata utilizzata per detector, tracker e demo; la L4 è risultata più adatta a SAM2. I valori FPS riportati negli esperimenti dipendono dalla GPU e dalla configurazione di esecuzione e non sono direttamente confrontabili se misurati su hardware differente.
