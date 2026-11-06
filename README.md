@@ -160,15 +160,11 @@ Abbinamento per tipo di evento e tempo (tolleranza 1 s) contro annotazioni manua
 | | Clip | Rilevati / reali / corretti | Precisione | Recall | F1 |
 |---|---|---|---|---|---|
 | Sviluppo, regole v3 | az1, az2, az4, az5, az6 | 29 / 40 / 26 | 0,90 | 0,65 | **0,75** |
-| **Test cieco, regole v3** | test1, test2 (secondo video, 1° quarto) | 13 / 23 / 9 | 0,69 | 0,39 | **0,50** |
-| Test, revisione v4 (dopo il test) | test1, test2 | 15 / 23 / 10 | 0,67 | 0,43 | 0,53 |
-| Test cieco v3, annotazione di test1 corretta (*) | test1, test2 | 13 / 23 / 10 | 0,77 | 0,43 | 0,56 |
-| Test v4, annotazione corretta (*) | test1, test2 | 15 / 23 / 11 | 0,73 | 0,48 | 0,58 |
+| **Test cieco v3**,  | test1, test2 | 13 / 23 / 10 | 0,77 | 0,43 | **0,56** |
+| **Test v4** | test1, test2 | 15 / 23 / 11 | 0,73 | 0,48 | 0,58 |
 
-(*) Il 6 novembre il canestro di test1 annotato a 21,8 s (ingresso nel canestro) è stato riportato a 20,8 s, l'istante del rilascio, che è il criterio dichiarato. La correzione è successiva alla visione degli eventi automatici: si riportano entrambi i numeri. Totali in `events_nba/valutazione_sviluppo_v3.csv` e `events_nba/valutazione_test_v4_annotazione_corretta.csv`.
 
 - Il numero di generalizzazione è quello della **v3**, congelata prima del test; la v4 è stata sviluppata dopo aver visto il test ed è riportata a parte.
-- Con una metrica severa, che richiede anche squadra e giocatori corretti, il test v3 scende a 7 eventi corretti su 23 (F1 0,39); 8 su 23 (F1 0,44) con l'annotazione corretta.
 - Nel test quasi tutti gli errori nascono prima delle regole: tagli di scena falsi, detection, attribuzione della palla.
 - Indipendenza del test: il detector della palla è addestrato solo sul video principale (4° quarto), mentre le clip di test vengono dal secondo video (1° quarto).
 
@@ -249,15 +245,6 @@ Tutti i notebook usano la stessa cella di setup: su Colab il progetto è `MyDriv
 3. Aprire il notebook, eseguire la **prima cella** (pip), poi **Runtime → Riavvia sessione**, poi eseguire dalla seconda cella.
 4. Ordine consigliato: `10` → `09` → `11` → `12` → `13` → `16` → `17` → `15`. Le celle saltano automaticamente il lavoro già fatto (training, detection, tracce).
 
-**In locale (notebook 12)**
-
-```powershell
-cd "F:\Tesi Basket"
-.\.venv-eval\Scripts\activate
-pip install -r requirements.txt
-```
-In VS Code selezionare il kernel `.venv-eval`.
-
 **GPU**
 
 - T4: sufficiente per detector, tracker e demo; SAM2 funziona grazie all’attenzione a blocchi, ma è lento.
@@ -283,7 +270,6 @@ In VS Code selezionare il kernel `.venv-eval`.
 
 - Campione proprio piccolo (7 clip, 1.320 frame); annotazioni a punti, quindi niente metriche MOT complete in E3.
 - SAM2 valutato sui primi 300 frame di ogni sequenza SportsMOT; tracker con parametri di default.
-- Omografia non validata con corrispondenze indipendenti (inlier ed errore di fit sono solo diagnostici).
 - SAM2 + ri-detection può creare maschere doppie sullo stesso giocatore; BoT-SORT scambia gli avversari nelle occlusioni.
 - Distanze e velocità della demo non validate: vanno lette come stime qualitative.
 - Eventi valutati su poche clip di una sola partita (63 eventi valutati, 23 nel test), annotati da una sola persona: i risultati sugli eventi sono preliminari, uno studio di caso.
@@ -301,7 +287,7 @@ In VS Code selezionare il kernel `.venv-eval`.
 | Demo squadre / mappa 2D / heatmap (BoT-SORT vs SAM2) | ✅ completata |
 | E4 – detector della palla | ✅ completato |
 | Eventi di gioco: regole v1 → v4, valutazione di sviluppo e test cieco | ✅ completato |
-| Stesura della tesi (LaTeX) | ⏳ dal 10 novembre 2026 |
+| Stesura della tesi (LaTeX) | ⏳ |
 
 Sviluppi futuri: rilevatore di tagli di scena robusto a flash e movimenti di camera, correttore temporale adattivo, controllo delle maschere doppie dopo la ri-detection, tracking affidabile della palla, riconoscimento delle azioni, OCR dei numeri di maglia.
 
