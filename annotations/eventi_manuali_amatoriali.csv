@@ -1,0 +1,15 @@
+clip,tipo,tempo_s,da,a,note
+,,0.4,3,4,rimessa
+frosinone_c2,passaggio,4.7,4,7,
+frosinone_c2,passaggio,6.7,7,99,
+frosinone_c2,passaggio,9.5,10,4,
+frosinone_c2,tiro_segnato,13.8,96,,
+frosinone_c2,passaggio,15.5,21,19,rimessa
+frosinone_c2,passaggio,23.0,19,34,
+frosinone_c2,tiro_sbagliato,30.7,106,,
+frosinone_c2,rimbalzo,33.1,,38,
+frosinone_c2,passaggio,34.2,38,51,
+frosinone_c2,passaggio,39,88,70,
+frosinone_c2,palla_rubata,42.1,,106,
+frosinone_c2,tiro_segnato,52.7,85,,
+frosinone_c2,passaggio,56.3,109,92,rimessa

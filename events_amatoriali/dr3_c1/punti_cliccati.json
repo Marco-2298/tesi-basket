@@ -1,0 +1,70 @@
+{
+ "angolo_sx_lontano": [
+  230.9,
+  294.1
+ ],
+ "angolo_dx_lontano": [
+  680.6,
+  301.1
+ ],
+ "metacampo_vicino": [
+  443.9,
+  432.7
+ ],
+ "metacampo_lontano": [
+  450.6,
+  300.7
+ ],
+ "centro": [
+  449.6,
+  332.1
+ ],
+ "cerchio_centro_vicino": [
+  449.3,
+  345.4
+ ],
+ "cerchio_centro_lontano": [
+  449.6,
+  322.4
+ ],
+ "area_sx_fondo_vicino": [
+  88.9,
+  325.7
+ ],
+ "area_sx_fondo_lontano": [
+  175.9,
+  306.7
+ ],
+ "area_sx_lunetta_vicino": [
+  213.3,
+  337.7
+ ],
+ "area_sx_lunetta_lontano": [
+  274.9,
+  312.7
+ ],
+ "lunetta_sx_punta": [
+  288.9,
+  326.7
+ ],
+ "area_dx_fondo_vicino": [
+  830.6,
+  342.1
+ ],
+ "area_dx_lunetta_vicino": [
+  697.3,
+  350.1
+ ],
+ "lunetta_dx_punta": [
+  613.3,
+  333.4
+ ],
+ "area_dx_lunetta_lontano": [
+  630.6,
+  319.4
+ ],
+ "area_dx_fondo_lontano": [
+  740.6,
+  317.7
+ ]
+}

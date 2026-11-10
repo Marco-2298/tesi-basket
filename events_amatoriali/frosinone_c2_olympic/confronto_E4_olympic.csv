@@ -1,0 +1,6 @@
+,palla E4 (NBA),palla Olympic-SK (FIBA)
+palla_candidati_%,23.6,48.7
+palla_accettata_%,15.1,28.0
+segmenti_possesso,27,29
+tracce,72,72
+eventi_automatici,"{""tiro_segnato"": 2, ""passaggio"": 2, ""palla_rubata"": 1}","{""passaggio"": 6, ""tiro_segnato"": 2, ""tiro_sbagliato"": 2, ""rimbalzo"": 1, ""palla_rubata"": 1}"

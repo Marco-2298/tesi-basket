@@ -1,0 +1,17 @@
+{
+  "video": "frosinone_pomezia.mp4",
+  "risoluzione": "1280x720",
+  "campioni": 270,
+  "passo_s": 20,
+  "inquadrature_di_gioco": 190,
+  "soglia_panoramica_px": 2.0,
+  "in_panoramica_%": 17.9,
+  "mov_px_mediana": 0.49,
+  "omografia_%": 60.0,
+  "omografia_camera_ferma_%": 59.0,
+  "omografia_in_panoramica_%": 64.7,
+  "palla_trovata_%": 14.2,
+  "palla_trovata_camera_ferma_%": 14.1,
+  "palla_trovata_in_panoramica_%": 14.7,
+  "nota": "palla: rilevamenti del detector di E4 con confidenza >= 0,25, non verificati a mano"
+}

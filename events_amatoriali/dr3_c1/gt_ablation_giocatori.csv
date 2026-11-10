@@ -1,0 +1,11 @@
+iou,config,tp,fp,fn,precisione,recall,F1,FP_per_frame
+0.5,A0 pipeline NBA invariata,69,56,277,0.552,0.199,0.293,1.22
+0.3,A0 pipeline NBA invariata,88,37,258,0.704,0.254,0.374,0.8
+0.5,A1 + filtro campo (calibrazione),69,43,277,0.616,0.199,0.301,0.93
+0.3,A1 + filtro campo (calibrazione),88,24,258,0.786,0.254,0.384,0.52
+0.5,A2 solo riquadri ingranditi + campo,31,350,315,0.081,0.09,0.085,7.61
+0.3,A2 solo riquadri ingranditi + campo,85,295,261,0.224,0.246,0.234,6.41
+0.5,A3 unione intera+riquadri + campo,88,258,258,0.254,0.254,0.254,5.61
+0.3,A3 unione intera+riquadri + campo,130,215,216,0.377,0.376,0.376,4.67
+0.5,A4 unione + campo + filtro altezza,88,179,258,0.33,0.254,0.287,3.89
+0.3,A4 unione + campo + filtro altezza,123,143,223,0.462,0.355,0.402,3.11

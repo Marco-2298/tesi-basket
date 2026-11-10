@@ -1,0 +1,10 @@
+,mean,mean,mean,mean,mean,count,count,count,count,count
+config,A0 pipeline NBA invariata,A1 + filtro campo (calibrazione),A2 solo riquadri ingranditi + campo,A3 unione intera+riquadri + campo,A4 unione + campo + filtro altezza,A0 pipeline NBA invariata,A1 + filtro campo (calibrazione),A2 solo riquadri ingranditi + campo,A3 unione intera+riquadri + campo,A4 unione + campo + filtro altezza
+fascia,,,,,,,,,,
+"[0, 20)",0.0,0.0,0.0,0.0,0.0,1,1,1,1,1
+"[20, 25)",0.0,0.0,0.0,0.0,0.0,4,4,4,4,4
+"[25, 30)",0.0,0.0,0.0,0.0,0.0,10,10,10,10,10
+"[30, 40)",0.0,0.0,0.06976744186046512,0.06976744186046512,0.06976744186046512,86,86,86,86,86
+"[40, 50)",0.06796116504854369,0.06796116504854369,0.1650485436893204,0.18446601941747573,0.18446601941747573,103,103,103,103,103
+"[50, 70)",0.3813559322033898,0.3813559322033898,0.059322033898305086,0.3898305084745763,0.3898305084745763,118,118,118,118,118
+"[70, 1000)",0.7083333333333334,0.7083333333333334,0.041666666666666664,0.7083333333333334,0.7083333333333334,24,24,24,24,24

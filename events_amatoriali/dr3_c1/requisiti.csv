@@ -1,0 +1,7 @@
+requisito,soglia,DR3,soddisfatto,nota
+Diametro della palla,>= 15 px (palle viste in addestramento: 15-26 px),9.3 px (mediana),False,servirebbe una risoluzione circa 1.6 volte maggiore (larghezza ~1377 px) con la stessa inquadratura
+Altezza dei giocatori per recall >= 0.8,non raggiunta,46 px (mediana),False,configurazione migliore: A1 + filtro campo (calibrazione)
+Movimento della camera,<= 2 px tra frame consecutivi,0.05 px (mediana),True,oltre la soglia l'immagine è mossa (vedi Frosinone)
+Calibrazione del campo,"keypoint automatici, oppure >= 8 punti visibili","manuale, 17 punti, errore LOO 19.8 cm",True,i keypoint automatici falliscono (notebook 19)
+Frame rate,>= 25 fps,29.97 fps,True,le regole degli eventi sono espresse in frame a 30 fps
+Punteggio in sovrimpressione,necessario solo per la lettura del punteggio,assente,False,punteggio non disponibile

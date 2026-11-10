@@ -1,0 +1,17 @@
+{
+  "clip": "frosinone_c2",
+  "secondi": 60.0,
+  "tagli_scena": 0,
+  "palla_candidati_%": 48.7,
+  "palla_accettata_%": 28.0,
+  "tracce": 72,
+  "segmenti_possesso": 29,
+  "eventi_automatici": {
+    "passaggio": 6,
+    "tiro_segnato": 2,
+    "tiro_sbagliato": 2,
+    "rimbalzo": 1,
+    "palla_rubata": 1
+  },
+  "eventi_manuali": 13
+}

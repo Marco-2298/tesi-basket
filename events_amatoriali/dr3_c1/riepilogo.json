@@ -1,0 +1,111 @@
+{
+  "clip": "dr3_c1",
+  "video": "pomezia_aprilia_dr3.mp4",
+  "inizio_nel_video": "15:20",
+  "risoluzione": "854x480",
+  "fps": 30.0,
+  "calibrazione": {
+    "n_punti": 17,
+    "k1": -0.56,
+    "errore_loo_cm_medio": 19.8,
+    "errore_loo_cm_max": 48.5,
+    "errore_loo_cm_medio_senza_distorsione": 77.3
+  },
+  "diametro_palla_atteso_px": {
+    "min": 2.2,
+    "mediana": 4.2,
+    "max": 9.7,
+    "quota_campo_inquadrata_%": 98.5,
+    "quota_campo_sotto_8px_%": 95.6,
+    "quota_campo_sotto_15px_%": 100.0
+  },
+  "palla_trovata_%": 14.7,
+  "detector_palla": "ball_detector.pt",
+  "giocatori_in_campo_medi": {
+    "intera": 2.2,
+    "riquadri": 6.1,
+    "unione": 5.9,
+    "unione_filtrata": 5.0
+  },
+  "modalita_detection": "unione",
+  "filtro_altezza": true,
+  "scala_filtro_altezza": 1.17,
+  "tracce_squadra": {
+    "-1": 7,
+    "0": 14,
+    "1": 16
+  },
+  "vel_max_mediana_m_s": 3.2350000000000003,
+  "frammentazione_tracce": {
+    "prima": {
+      "tracce": 122.0,
+      "durata_media_s": 1.7,
+      "tracce_oltre_10s": 2.0,
+      "tracce_oltre_metà_clip": 0.0
+    },
+    "dopo": {
+      "tracce": 37.0,
+      "durata_media_s": 8.5,
+      "tracce_oltre_10s": 14.0,
+      "tracce_oltre_metà_clip": 0.0
+    }
+  },
+  "ground_truth": {
+    "frame": 46,
+    "cancellati_non_di_gioco": 4,
+    "giocatori_iou05": {
+      "A0 pipeline NBA invariata": {
+        "precisione": 0.552,
+        "recall": 0.199,
+        "F1": 0.293,
+        "FP_per_frame": 1.22
+      },
+      "A1 + filtro campo (calibrazione)": {
+        "precisione": 0.616,
+        "recall": 0.199,
+        "F1": 0.301,
+        "FP_per_frame": 0.93
+      },
+      "A2 solo riquadri ingranditi + campo": {
+        "precisione": 0.081,
+        "recall": 0.09,
+        "F1": 0.085,
+        "FP_per_frame": 7.61
+      },
+      "A3 unione intera+riquadri + campo": {
+        "precisione": 0.254,
+        "recall": 0.254,
+        "F1": 0.254,
+        "FP_per_frame": 5.61
+      },
+      "A4 unione + campo + filtro altezza": {
+        "precisione": 0.33,
+        "recall": 0.254,
+        "F1": 0.287,
+        "FP_per_frame": 3.89
+      }
+    },
+    "altezza_min_recall_px": {
+      "A0 pipeline NBA invariata": null,
+      "A1 + filtro campo (calibrazione)": null,
+      "A2 solo riquadri ingranditi + campo": null,
+      "A3 unione intera+riquadri + campo": null,
+      "A4 unione + campo + filtro altezza": null
+    },
+    "palla": {
+      "frame_con_palla_visibile": 6,
+      "frame_annotati": 46,
+      "diametro_px_mediana": 9.3,
+      "diametro_px_min_max": [
+        6.0,
+        15.3
+      ],
+      "recall_intera": 0.0,
+      "rilevamenti_sbagliati_per_frame_intera": 0.348,
+      "recall_riquadri": 0.0,
+      "rilevamenti_sbagliati_per_frame_riquadri": 0.913
+    },
+    "movimento_camera_px": 0.05,
+    "fps_video": 29.97
+  }
+}
