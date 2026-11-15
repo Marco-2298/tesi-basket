@@ -1,384 +1,684 @@
-# Detection e tracking dei giocatori nelle partite di basket
 
-**Tecniche di Computer Vision e Deep Learning per la detection e il tracking durante le partite di basket**
+# Basketball Video Analysis with Computer Vision
 
-Tesi di Laurea Magistrale in Ingegneria Informatica – Curriculum Artificial Intelligence and Machine Learning
-Autore: Marco · Relatore: Giuseppe Sansonetti · Università: Università Roma 3
+Sistema di analisi automatica delle partite di basket basato su **Computer Vision e Deep Learning**, sviluppato per rilevare e tracciare i giocatori, ricostruirne le posizioni sul campo e riconoscere alcuni eventi di gioco a partire da riprese video.
+
+Il progetto integra modelli di Object Detection, algoritmi di Multi-Object Tracking, segmentazione video, trasformazioni geometriche e regole temporali per ottenere informazioni sugli spostamenti dei giocatori e sull'evoluzione delle azioni.
+
+L'analisi è stata sviluppata principalmente su riprese televisive NBA e successivamente sperimentata su video di partite dilettantistiche con differenti condizioni di acquisizione.
 
 ---
 
 ## Indice
 
-1. [Obiettivo](#1-obiettivo)
-2. [Pipeline](#2-pipeline)
-3. [Risultati principali](#3-risultati-principali)
-4. [Struttura della repository](#4-struttura-della-repository)
-5. [Notebook](#5-notebook)
-6. [Dati e modelli](#6-dati-e-modelli)
-7. [Come riprodurre gli esperimenti](#7-come-riprodurre-gli-esperimenti)
-8. [Problemi tecnici noti e soluzioni](#8-problemi-tecnici-noti-e-soluzioni)
-9. [Limiti](#9-limiti)
-10. [Stato del lavoro e sviluppi](#10-stato-del-lavoro-e-sviluppi)
-11. [Riferimenti](#11-riferimenti)
+1. [Panoramica](#1-panoramica)
+2. [Architettura del sistema](#2-architettura-del-sistema)
+3. [Funzionalità](#3-funzionalità)
+4. [Risultati sperimentali](#4-risultati-sperimentali)
+5. [Struttura del progetto](#5-struttura-del-progetto)
+6. [Notebook](#6-notebook)
+7. [Dataset e modelli](#7-dataset-e-modelli)
+8. [Installazione ed esecuzione](#8-installazione-ed-esecuzione)
+9. [Problemi tecnici noti](#9-problemi-tecnici-noti)
+10. [Limitazioni](#10-limitazioni)
+11. [Sviluppi futuri](#11-sviluppi-futuri)
+12. [Tecnologie e riferimenti](#12-tecnologie-e-riferimenti)
 
 ---
 
-## 1. Obiettivo
+## 1. Panoramica
 
-Partendo da normali riprese televisive (una sola telecamera in movimento), il progetto ricostruisce **chi** sono i giocatori, **dove** si trovano sul campo e **come** si muovono nel tempo, e confronta in modo quantitativo diverse tecniche per ogni passaggio:
+L'obiettivo è estrarre automaticamente informazioni utili all'analisi delle partite di basket utilizzando riprese monocamera, senza richiedere sistemi professionali di tracking installati negli impianti sportivi.
 
-- **detection** dei giocatori (CNN e transformer, preaddestrati e con fine-tuning);
-- **tracking** multi-oggetto (tracking-by-detection classico e propagazione di maschere con SAM2);
-- **localizzazione 2D** sul campo tramite keypoint e omografia, con correzione temporale delle coordinate;
-- **applicazioni**: classificazione delle squadre, mappa 2D animata, heatmap, distanze e velocità;
-- **eventi di gioco**: tiri, canestri, passaggi, rimbalzi, palle rubate e rimesse, riconosciuti automaticamente e disegnati sulla lavagna tattica 2D.
+La pipeline affronta cinque problemi principali:
 
-Domande di ricerca:
+- **Player Detection:** individuazione dei giocatori nei fotogrammi.
+- **Multi-Object Tracking:** associazione temporale delle rilevazioni e mantenimento delle identità.
+- **Court Localization:** ricostruzione delle posizioni su un campo bidimensionale tramite omografia.
+- **Spatial Analytics:** classificazione delle squadre, traiettorie, heatmap e statistiche di movimento.
+- **Event Recognition:** riconoscimento di tiri, canestri, passaggi, rimbalzi, palle rubate e rimesse.
 
-| Domanda | Dove trova risposta |
-|---|---|
-| Serve il fine-tuning del detector? Quale architettura? | E1 |
-| Quanto bene si mantengono le identità nel tempo? | E2 |
-| Quali errori introduce SAM2 e come ridurli? | E2, E3 |
-| Il post-processing migliora le traiettorie? | E2 (interpolazione), E3 (correttore) |
-| Le coordinate supportano un’analisi tattica? | Demo (qualitativa) |
-| Un detector dedicato trova meglio la palla? | E4 |
-| Si possono riconoscere gli eventi di gioco, e quanto bene? | Modulo eventi (sviluppo + test cieco) |
+Sono state confrontate differenti architetture e configurazioni per analizzarne accuratezza, robustezza e costo computazionale.
 
-## 2. Pipeline
+Il sistema è modulare: i componenti di detection, tracking e localizzazione possono essere sostituiti e valutati separatamente.
 
-```
-video broadcast NBA
-   │
-   ├─► detector giocatori (RT-DETR-L / YOLO11 fine-tuned)          ← E1
-   │
-   ├─► tracking: BoT-SORT, ByteTrack, OC-SORT, C-BIoU, SORT         ← E2
-   │            oppure SAM2.1 (Hiera Large) + ri-detection periodica
-   │   + interpolazione dei buchi (≤ 20 frame)
-   │
-   ├─► punto a terra (centro del bordo inferiore della box)
-   │   + correzione temporale basata sull’altezza della box          ← E3
-   │
-   ├─► keypoint del campo (33 riferimenti) → omografia RANSAC per frame
-   │
-   └─► coordinate in piedi/metri sul campo NBA
-         ├─ classificazione squadre (colore maglia, K-Means per traccia)
-         ├─ mappa 2D animata affiancata al video
-         ├─ heatmap per squadra
-         ├─ distanze e velocità
-         └─ eventi (notebook 15):
-              tabellone (punteggio) + palla (detector E4 + filtro di Kalman)
-              → possesso → regole → tiri, canestri, passaggi, rimbalzi,
-                palle rubate, rimesse → lavagna 2D, linea del tempo, valutazione
-```
+---
 
-**Migliorie sperimentali introdotte nel progetto**
+## 2. Architettura del sistema
 
-- **SAM2 + ri-detection**: ogni 5 frame il detector cerca giocatori non coperti da maschere (IoU < 0,3); se confermati in due controlli consecutivi, SAM2 viene reinizializzato mantenendo gli ID. Risolve il problema dei giocatori assenti al frame 0.
-- **Interpolazione** lineare dei buchi nelle tracce (≤ 20 frame).
-- **Attenzione a blocchi** per eseguire SAM2 su GPU pre-Ampere (T4) senza out-of-memory (risultato identico).
-- **Pulizia delle tracce nella demo**: rimozione dei doppioni, scarto dei piedi coperti dal tabellone, divisione delle tracce che cambiano squadra, esclusione dell’arbitro.
+La pipeline combina diversi moduli di elaborazione.
 
-## 3. Risultati principali
-
-### E1 – Detection (test Roboflow v18 in-domain e SportsMOT out-of-domain)
-
-| Modello | AP50:95 in-domain | AP50:95 SportsMOT | FPS (T4) |
-|---|---|---|---|
-| YOLO11n fine-tuned | 0,754 | 0,625 | 88,6 |
-| YOLO11s fine-tuned | 0,796 | 0,641 | 79,9 |
-| **YOLO11m fine-tuned** | **0,830** | 0,662 | 51,7 |
-| **RT-DETR-L fine-tuned** | 0,823 | **0,708** | 14,6 |
-| YOLO11s COCO (zero-shot) | 0,486 | 0,547 | 75,9 |
-
-Il fine-tuning è indispensabile (+0,31 AP50:95 a parità di architettura, YOLO11s). RT-DETR-L generalizza meglio sul dataset indipendente ed è il detector principale; YOLO11m è il migliore in-domain e 3,5× più veloce.
-
-### E2 – Tracking (SportsMOT, sequenze di basket, split val)
-
-**15 sequenze complete (12.557 frame), tracking-by-detection:**
-
-| Detector + tracker | HOTA | MOTA | IDF1 | ID switch |
-|---|---|---|---|---|
-| **RT-DETR ft + BoT-SORT** | **0,539** | 0,898 | **0,571** | 641 |
-| RT-DETR ft + C-BIoU | 0,521 | 0,894 | 0,558 | 720 |
-| YOLO11m ft + BoT-SORT | 0,518 | 0,905 | 0,557 | 623 |
-| YOLO11s COCO + BoT-SORT | 0,381 | 0,620 | 0,387 | 847 |
-
-**15 sequenze × primi 300 frame, confronto con SAM2 (GPU L4):**
-
-| Metodo | HOTA | AssA | MOTA | IDF1 | ID switch | FPS |
-|---|---|---|---|---|---|---|
-| **SAM2 + ri-detection** | **0,734** | 0,785 | 0,727 | **0,854** | 65 | ≈ 1,4 |
-| SAM2 solo frame 0 | 0,713 | **0,796** | 0,672 | 0,827 | **54** | ≈ 1,6 |
-| RT-DETR ft + BoT-SORT | 0,676 | 0,611 | 0,888 | 0,775 | 249 | – |
-| YOLO11m ft + BoT-SORT | 0,654 | 0,574 | **0,904** | 0,766 | 244 | – |
-
-- Il **detector conta più del tracker**: a parità di tracker (BoT-SORT) i detector fine-tuned portano l’HOTA da 0,381 a 0,518–0,539. Cambiano insieme architettura, taglia e addestramento, quindi l’effetto del solo fine-tuning qui non è isolato.
-- Solo BoT-SORT compensa il movimento della telecamera; tutti i tracker usano i parametri di default della libreria (SORT, per esempio, crea tracce da confidenza 0,25).
-- **SAM2 mantiene molto meglio le identità** (circa 4 volte meno ID switch); i tracker classici localizzano meglio (MOTA più alta) e sono molto più veloci.
-- La **ri-detection** migliora la baseline SAM2: +0,021 HOTA, +0,055 MOTA, +0,027 IDF1.
-- L’interpolazione dà guadagni piccoli e consistenti, tranne con SORT.
-
-### E2b – Tracking in-domain (notebook 18)
-
-Stesso protocollo di E2 sulle stesse 15 sequenze di SportsMOT val, ma con un YOLO11m addestrato sulle sequenze di basket di **SportsMOT train** (13 sequenze, 2.069 frame; nessuna partita in comune con il val).
-
-| Tracker | YOLO11m Roboflow (fuori dominio) | RT-DETR-L Roboflow (fuori dominio) | **YOLO11m SportsMOT (in-domain)** |
-|---|---|---|---|
-| SORT | 0,420 | 0,242 | 0,486 |
-| ByteTrack | 0,475 | 0,416 | 0,562 |
-| OC-SORT | 0,454 | 0,453 | 0,562 |
-| BoT-SORT | 0,518 | 0,539 | **0,611** |
-| C-BIoU | 0,494 | 0,521 | **0,615** |
-
-A parità di architettura (YOLO11m) e di tracker cambia solo il dominio dei dati di addestramento: l'HOTA cresce per tutti i tracker (+0,07–0,12), migliorano sia DetA sia AssA, e la graduatoria dei tracker resta la stessa.
-
-### E3 – Coordinate sul campo (7 clip NBA proprie, 176 punti annotati a mano)
-
-| Metodo (test: 4 clip, 91 punti) | Copertura | RMSE (px) |
-|---|---|---|
-| SAM2 solo frame 0 | 0,923 | 17,13 |
-| **SAM2 + ri-detection** | **0,945** | **14,31** |
-| SAM2 + ri-detection + correttore sull’altezza | 0,934 | 15,50 |
-
-La ri-detection migliora anche la localizzazione (RMSE –16%); nella clip_01 recupera il portatore di palla mancante. Il correttore temporale originale **non** produce un miglioramento misurabile (risultato negativo documentato: si “blocca” sui cambi di inquadratura).
-
-### Demo applicativa (clip_05, ≈ 10 s)
-
-| | BoT-SORT | SAM2 + ri-detection |
-|---|---|---|
-| Tracce per 10 giocatori | 23 | **14** |
-| Scambi tra avversari corretti | 9 | **2** |
-| Coerenza squadre | 0,981 | 0,973 |
-| Velocità max (mediana) | 5,1 m/s | 5,1 m/s |
-
-Squadre classificate correttamente, arbitro escluso, heatmap e velocità plausibili e stabili rispetto al tracker.
-
-### E4 – Detector dedicato alla palla (notebook 16)
-
-YOLO11s a una sola classe, 1280 px, addestrato su Roboflow v18 (solo la palla) + 312 frame annotati della gara 7 delle Finals 2016 (243 con la palla), presi solo dal primo 70% del video principale; test proprio di 107 frame dall'ultimo 30%.
-
-| Detector | Test proprio AP50 | AP50:95 | Recall@0,25 | Test v18 AP50 | FPS |
-|---|---|---|---|---|---|
-| COCO «sports ball», 1280 | 0,095 | 0,066 | 0,024 | 0,038 | 40,6 |
-| Vecchio multi-classe, 640 | 0,508 | 0,257 | 0,470 | 0,822 | 49,2 |
-| Vecchio multi-classe, 1280 | 0,409 | 0,313 | 0,458 | 0,889 | 41,0 |
-| **Nuovo, 1280** | **0,768** | **0,485** | **0,675** | 0,855 | 56,3 |
-
-Il guadagno viene dai frame del dominio annotati, non dalla sola risoluzione.
-
-### Eventi di gioco (notebook 15, clip NBA Finals 2016)
-
-Abbinamento per tipo di evento e tempo (tolleranza 1 s) contro annotazioni manuali fatte prima di eseguire il modello.
-
-| | Clip | Rilevati / reali / corretti | Precisione | Recall | F1 |
-|---|---|---|---|---|---|
-| Sviluppo, regole v3 | az1, az2, az4, az5, az6 | 29 / 40 / 26 | 0,90 | 0,65 | **0,75** |
-| **Test cieco, regole v3** | test1, test2 (secondo video, 1° quarto) | 13 / 23 / 9 | 0,69 | 0,39 | **0,50** |
-| Test, revisione v4 (dopo il test) | test1, test2 | 15 / 23 / 10 | 0,67 | 0,43 | 0,53 |
-| Test cieco v3, annotazione di test1 corretta (*) | test1, test2 | 13 / 23 / 10 | 0,77 | 0,43 | 0,56 |
-| Test v4, annotazione corretta (*) | test1, test2 | 15 / 23 / 11 | 0,73 | 0,48 | 0,58 |
-
-(*) Il 6 novembre il canestro di test1 annotato a 21,8 s (ingresso nel canestro) è stato riportato a 20,8 s, l'istante del rilascio, che è il criterio dichiarato. La correzione è successiva alla visione degli eventi automatici: si riportano entrambi i numeri. Totali in `events_nba/valutazione_sviluppo_v3.csv` e `events_nba/valutazione_test_v4_annotazione_corretta.csv`.
-
-- Il numero di generalizzazione è quello della **v3**, congelata prima del test; la v4 è stata sviluppata dopo aver visto il test ed è riportata a parte.
-- Con una metrica severa, che richiede anche squadra e giocatori corretti, il test v3 scende a 7 eventi corretti su 23 (F1 0,39); 8 su 23 (F1 0,44) con l'annotazione corretta.
-- Nel test quasi tutti gli errori nascono prima delle regole: tagli di scena falsi, detection, attribuzione della palla.
-- Indipendenza del test: il detector della palla è addestrato solo sul video principale (4° quarto), mentre le clip di test vengono dal secondo video (1° quarto).
-
-### Riprese dilettantistiche (notebook 19 e 20, campo FIBA)
-
-Il sistema sviluppato sull'NBA applicato senza riaddestramento a due partite amatoriali con riprese diverse, per misurare cosa funziona e ricavare i **requisiti minimi** di una ripresa.
-
-**DR3 Pomezia–Aprilia** (camera fissa grandangolare, 854×480; notebook 20)
-
-| Misura | Valore |
-|---|---|
-| Calibrazione manuale (17 punti, distorsione k1 = −0,56) | errore leave-one-out 77,3 → **19,8 cm** |
-| Diametro atteso della palla | 2,2–9,7 px (mediana 4,2): il 96% del campo sotto 8 px |
-| Giocatori, ground truth su 46 fotogrammi (346 giocatori), IoU 0,5 | pipeline NBA F1 0,29 → + filtro campo **0,30** (precisione 0,55 → 0,62); unione intera + riquadri recall 0,20 → 0,25 |
-| Recall per altezza del giocatore | 0 sotto 40 px, 0,38 tra 50 e 70 px, 0,71 sopra 70 px |
-| Palla (6 fotogrammi con palla visibile) | recall **0**; il «14,7% di palla trovata» senza ground truth era fatto solo di falsi positivi |
-| Ricucitura delle tracce (post-processing in metri) | 122 → **37** tracce in 60 s, durata media 1,7 → 8,5 s |
-
-**Frosinone–Pomezia** (camera automatica Fanner Cam, 1280×720; notebook 19)
-
-| Misura | Valore |
-|---|---|
-| Camera in panoramica (> 2 px tra frame consecutivi) | 18% delle inquadrature di gioco; la palla viene trovata nella stessa misura con camera ferma e in movimento |
-| Omografia automatica (keypoint FIBA, soglia 0,3) | 60% dei frame, spesso errata per i **campi laterali** della palestra |
-| Omografia manuale propagata (6 fotogrammi chiave, celle 4M) | residuo 3,5–11 cm; errore 0,3–0,7 m entro 8 s dal fotogramma chiave; posizioni valide 95% (88% con i keypoint) |
-| Palla, secondo tempo (77 fotogrammi, 38 palle), E4 → Olympic-SK | recall **0,11 → 0,32**, F1 0,18 → 0,38; palla di 22,8 px: il problema è il pallone (Molten FIBA), non la dimensione |
-| Pipeline con palla Olympic-SK (clip 15:50–16:50) | palla accettata 15% → 28%, tiri dalla traiettoria 0 → 4 |
-| **F1 degli eventi** (13 eventi annotati) | palla E4 **0,33** → palla Olympic-SK **0,56** (uguale con omografia keypoint o manuale: l'omografia cambia le posizioni, non gli eventi) |
-
-Il modello della palla FIBA (`olympic-sk-basketball-dataset-v2/14`, Roboflow Universe) è scelto sul primo tempo e misurato sul secondo. Le configurazioni amatoriali sono riportate separatamente dal test cieco NBA (regole v3 congelate).
-
-## 4. Struttura della repository
-
-```
-Tesi Basket/
-├── notebooks/                 notebook degli esperimenti (vedi sezione 5)
-├── scripts/                   codice originale della pipeline baseline e strumenti
-│   ├── height_corrector.py    correttore temporale basato sull’altezza
-│   ├── court_evaluation.py    valutazione sulle annotazioni manuali
-│   ├── thesis_tools.py        matching, metriche, utilità
-│   ├── annotate.py            strumento di annotazione (avvio: Annota.cmd)
-│   └── run_batch.py           pipeline baseline su più clip
-├── annotations/               annotazioni manuali e manifest delle clip
-│   ├── annotations.csv        216 etichette (176 punti a terra annotabili)
-│   ├── tasks.csv              sequenze per le metriche di identità
-│   ├── manifest*.csv          clip, split validation/test, percorsi delle tracce
-│   ├── eventi_manuali.csv     eventi annotati a mano sulle clip NBA (sviluppo e test)
-│   └── eventi_manuali_amatoriali.csv   eventi annotati sulla clip frosinone_c2
-├── experiments/               risultati (CSV, figure) di E1–E4
-│   ├── E1_detection/
-│   ├── E2_tracking/
-│   ├── E3_correzione/         run f0 e run con ri-detection
-│   └── E4_ball/
-├── events/                    eventi sulla clip SportsMOT (notebook 14)
-├── events_nba/                eventi per clip NBA: eventi automatici, valutazione,
-│                              lavagne, linea del tempo, riepilogo; valutazione totale
-├── events_amatoriali/         video dilettantistici: dr3_c1/ (calibrazione, ablation,
-│                              requisiti), frosinone_partita/ (misure sulla partita, palla),
-│                              frosinone_c2[_olympic]/ (eventi, omografia manuale, confronti)
-├── configs/                   configurazione del progetto
-├── tesi/                      materiale per la stesura
-├── requirements.txt
-└── README.md
+```text
+                  VIDEO DI BASKET
+                         |
+             Estrazione dei fotogrammi
+                         |
+          +--------------+--------------+
+          |              |              |
+          v              v              v
+     Detection       Court Keypoint   Ball Detection
+     giocatori        Detection        YOLO11s
+          |              |              |
+          v              v              v
+     Multi-Object      Omografia      Ball Tracking
+       Tracking         RANSAC        e filtraggio
+          |              |              |
+          +------+-------+              |
+                 |                      |
+                 v                      |
+        Posizioni giocatori             |
+           sul campo 2D                 |
+                 |                      |
+          +------+------+               |
+          |             |               |
+          v             v               |
+     Classificazione  Traiettorie       |
+       squadre       e statistiche      |
+          |             |               |
+          +------+------+---------------+
+                 |
+                 v
+          Stima del possesso
+                 |
+                 v
+       Riconoscimento eventi
+                 |
+       +---------+----------+
+       |                    |
+       v                    v
+  Statistiche          Lavagna tattica
+  e timeline                 2D
 ```
 
-Non sono nella repository (vedi `.gitignore`), ma su Google Drive in `MyDrive/Tesi_Basket`: video, modelli e pesi, dataset, output delle tracce (`outputs/`), video demo (`demo/`), run di training, video diagnostici e detection in cache degli eventi (`*.mp4`, `*.npy`), dati per il simulatore delle regole (`dati_*.zip`).
+### Object Detection
 
-## 5. Notebook
+Per il rilevamento dei giocatori sono stati valutati:
 
-| Notebook | Contenuto | Esecuzione |
-|---|---|---|
-| `00_setup_e_pulizia` | Inventario e riorganizzazione del progetto | Locale |
-| `09_genera_tracce_SAM2_7clip` | Pipeline originale sulle 7 clip: SAM2 f0 e SAM2 + ri-detection, keypoint e omografie | Colab (T4/L4) |
-| `10_E1_detection_confronto` | Fine-tuning e confronto di 5 detector, in-domain e su SportsMOT | Colab T4 |
-| `11_E2_tracking_confronto` | 5 tracker × 3 detector + SAM2 su SportsMOT, metriche HOTA/MOTA/IDF1 | Colab T4 (tracker), L4 (SAM2) |
-| `12_E3_correzione_coordinate` | Correttore temporale, selezione su validation, test, confronto f0/redet | Locale o Colab (CPU) |
-| `13_demo_squadre_mappa2D` | Squadre, mappa 2D, heatmap, distanze; BoT-SORT vs SAM2 | Colab T4 |
-| `14_eventi_lavagna2D` | Prima versione degli eventi su una clip SportsMOT (superata dal 15) | Colab T4 |
-| `15_eventi_nba_v1_congelato` | Prima versione delle regole, congelata come riferimento | Colab T4 |
-| `15_eventi_nba_v3` | Regole v3, congelate per il test cieco | Colab T4 |
-| `15_eventi_nba_v4` | Revisione v4, successiva al test | Colab T4 |
-| `15_eventi_nba_esecuzione/` | Un notebook eseguito per clip: az1–az6 con le regole v3, test1 e test2 con la revisione v4. L'esecuzione v3 del test cieco (F1 0,50) è riportata nella relazione; i file di `events_nba/finals2016_test*` corrispondono alla v4 | Colab T4 |
-| `16_E4_detector_palla` | E4: dataset, addestramento e confronto del detector della palla | Colab L4 |
-| `17_estrai_clip` | Panoramica del video, estrazione delle clip e controlli di qualità | Colab |
-| `18_E2b_tracking_indomain` | E2b: detector YOLO11m addestrato su SportsMOT train, tracking su SportsMOT val | Colab L4 |
-| `19_amatoriali_FIBA` | Frosinone–Pomezia (camera automatica): regole v3 invariate, misure su tutta la partita (E), scelta e misura della palla FIBA (P, Q1, Q2), palla Olympic-SK nella pipeline (D0), omografia manuale con propagazione (4M), confronti (R, R2) | Colab (L4 consigliata) |
-| `20_DR3_camera_fissa` | DR3 Pomezia–Aprilia (camera fissa 480p): calibrazione manuale con distorsione, dimensione attesa della palla, riquadri ingranditi e filtri, tracking e ricucitura, ground truth, ablation e tabella dei requisiti | Colab |
+- YOLO11n, YOLO11s e YOLO11m.
+- RT-DETR-L.
+- Modelli preaddestrati e modelli sottoposti a fine-tuning.
 
-Tutti i notebook usano la stessa cella di setup: su Colab il progetto è `MyDrive/Tesi_Basket`, in locale `F:\Tesi Basket`.
+Il rilevamento della palla utilizza un detector dedicato YOLO11s, addestrato a risoluzione 1280 pixel.
 
-## 6. Dati e modelli
+### Multi-Object Tracking
 
-| Risorsa | Descrizione |
+Sono stati confrontati cinque algoritmi tracking-by-detection:
+
+- SORT
+- ByteTrack
+- OC-SORT
+- BoT-SORT
+- C-BIoU
+
+È stata inoltre sviluppata una configurazione basata su **SAM2.1 Hiera Large**, che utilizza la propagazione temporale delle maschere.
+
+Per SAM2 è stata implementata una strategia di **ri-detection periodica**, che consente di introdurre nella sequenza giocatori non presenti nel fotogramma iniziale.
+
+### Ricostruzione spaziale
+
+Le posizioni dei giocatori vengono trasformate dal sistema di coordinate dell'immagine a quello del campo attraverso:
+
+1. Rilevamento di 33 keypoint del terreno di gioco.
+2. Stima dell'omografia mediante RANSAC.
+3. Estrazione del punto rappresentativo del contatto con il terreno.
+4. Proiezione sul campo 2D.
+5. Filtraggio temporale delle coordinate.
+
+La ricostruzione permette di utilizzare coordinate espresse nel sistema di riferimento del campo per realizzare visualizzazioni e statistiche di movimento.
+
+---
+
+## 3. Funzionalità
+
+### 3.1 Rilevamento e tracking dei giocatori
+
+Il sistema associa a ciascun giocatore un identificativo temporale, utilizzato per ricostruirne la traiettoria.
+
+Sono presenti procedure di post-processing per:
+
+- Interpolare brevi interruzioni delle tracce.
+- Individuare rilevazioni duplicate.
+- Escludere posizioni non affidabili.
+- Riconoscere alcuni scambi di identità tra giocatori di squadre differenti.
+
+### 3.2 Classificazione delle squadre
+
+La classificazione utilizza le caratteristiche cromatiche delle divise.
+
+Le informazioni vengono estratte dalla regione del busto, rappresentate mediante istogrammi nello spazio colore Lab e aggregate per traccia.
+
+Successivamente viene applicato K-means con due cluster.
+
+Un controllo temporale permette di individuare cambiamenti persistenti del colore associato a una traccia, potenzialmente causati da scambi di identità.
+
+### 3.3 Mappa bidimensionale
+
+I giocatori vengono rappresentati su un campo NBA osservato dall'alto.
+
+La visualizzazione mostra:
+
+- Posizioni aggiornate nel tempo.
+- Squadra di appartenenza.
+- Identificativi dei giocatori.
+- Traiettorie ricostruite.
+- Confronto sincronizzato con il video originale.
+
+### 3.4 Heatmap
+
+Le coordinate dei giocatori vengono aggregate spazialmente per individuare le aree maggiormente occupate.
+
+Le heatmap possono essere generate per singolo giocatore o per squadra.
+
+Nella demo vengono utilizzati istogrammi bidimensionali, filtraggio gaussiano e normalizzazione per squadra.
+
+### 3.5 Distanze e velocità
+
+Le coordinate proiettate sul campo consentono di stimare:
+
+- Distanza percorsa.
+- Velocità media.
+- Velocità massima su intervalli temporali.
+- Traiettorie individuali.
+
+Per ridurre l'influenza degli errori di localizzazione vengono applicati filtri temporali e controlli sugli spostamenti anomali.
+
+Queste statistiche sono indicative e non sono state validate rispetto a dati ufficiali di tracking.
+
+### 3.6 Riconoscimento degli eventi
+
+Il modulo eventi combina:
+
+- Detection e tracking dei giocatori.
+- Detection della palla.
+- Stima del possesso.
+- Analisi del punteggio.
+- Rilevamento dei cambi di inquadratura.
+- Regole temporali per identificare le azioni.
+
+Gli eventi considerati comprendono:
+
+- Passaggi.
+- Tiri.
+- Canestri.
+- Rimbalzi.
+- Palle rubate.
+- Rimesse.
+
+### 3.7 Lavagna tattica
+
+La lavagna tattica rappresenta gli eventi riconosciuti su un campo bidimensionale.
+
+Sono disponibili due modalità:
+
+**Automatica:** gli eventi sono generati dalla pipeline.
+
+**Manuale:** gli eventi sono letti da un file CSV, mentre le coordinate vengono recuperate dalle tracce dei giocatori.
+
+La visualizzazione permette di confrontare gli eventi riconosciuti automaticamente con quelli annotati manualmente.
+
+Sono inoltre disponibili video diagnostici, timeline del possesso e riepiloghi statistici.
+
+---
+
+## 4. Risultati sperimentali
+
+### E1 — Confronto dei detector
+
+I modelli sono stati valutati sul test set di Roboflow Basketball Player Detection v18 e su sequenze di basket di SportsMOT.
+
+| Modello | AP50:95 Roboflow | AP50:95 SportsMOT | FPS T4 |
+|---|---:|---:|---:|
+| YOLO11n fine-tuned | 0.754 | 0.625 | 88.6 |
+| YOLO11s fine-tuned | 0.796 | 0.641 | 79.9 |
+| **YOLO11m fine-tuned** | **0.830** | 0.662 | 51.7 |
+| **RT-DETR-L fine-tuned** | 0.823 | **0.708** | 14.6 |
+| YOLO11s COCO | 0.486 | 0.547 | 75.9 |
+
+**Osservazioni principali**
+
+- Il fine-tuning migliora le prestazioni sul dataset Roboflow.
+- YOLO11m raggiunge la migliore AP50:95 in-domain.
+- RT-DETR-L ottiene il risultato migliore sui dati SportsMOT.
+- YOLO11m offre un compromesso più favorevole tra accuratezza e costo computazionale.
+
+### E2 — Multi-Object Tracking
+
+La valutazione tracking-by-detection utilizza 15 sequenze di basket SportsMOT, per un totale di 12.557 fotogrammi.
+
+| Detector + Tracker | HOTA | MOTA | IDF1 |
+|---|---:|---:|---:|
+| **RT-DETR-L + BoT-SORT** | **0.539** | 0.898 | **0.571** |
+| RT-DETR-L + C-BIoU | 0.521 | 0.894 | 0.558 |
+| YOLO11m + BoT-SORT | 0.518 | 0.905 | 0.557 |
+| YOLO11s COCO + BoT-SORT | 0.381 | 0.620 | 0.387 |
+
+#### Confronto con SAM2
+
+Per consentire il confronto con SAM2, la valutazione è stata ripetuta sui primi 300 fotogrammi delle 15 sequenze.
+
+| Metodo | HOTA | AssA | IDF1 | ID Switch |
+|---|---:|---:|---:|---:|
+| **SAM2 + ri-detection** | **0.734** | 0.785 | **0.854** | 65 |
+| SAM2 solo frame iniziale | 0.713 | **0.796** | 0.827 | **54** |
+| RT-DETR-L + BoT-SORT | 0.676 | 0.611 | 0.775 | 249 |
+| YOLO11m + BoT-SORT | 0.654 | 0.574 | 0.766 | 244 |
+
+SAM2 ottiene una maggiore continuità delle identità rispetto alle configurazioni tracking-by-detection valutate, ma presenta un costo computazionale elevato.
+
+La configurazione con ri-detection raggiunge circa 1,4 FPS su GPU NVIDIA L4.
+
+La ri-detection migliora la copertura dei giocatori rispetto all'inizializzazione esclusiva nel primo fotogramma, con un incremento di 0.021 HOTA.
+
+### E2b — Tracking con addestramento in-domain
+
+È stato valutato anche un YOLO11m addestrato sul training set di SportsMOT.
+
+| Tracker | YOLO11m Roboflow | YOLO11m SportsMOT |
+|---|---:|---:|
+| SORT | 0.420 | 0.486 |
+| ByteTrack | 0.475 | 0.562 |
+| OC-SORT | 0.454 | 0.562 |
+| BoT-SORT | 0.518 | 0.611 |
+| C-BIoU | 0.494 | **0.615** |
+
+*Valori HOTA.*
+
+L'addestramento sui dati SportsMOT produce un miglioramento delle prestazioni di tracking per tutti gli algoritmi considerati.
+
+Il confronto evidenzia l'importanza del dominio dei dati di addestramento, pur non isolandone completamente l'effetto da quello delle altre configurazioni di training.
+
+### E3 — Localizzazione e correzione delle coordinate
+
+La valutazione è stata effettuata su punti di contatto con il terreno annotati manualmente in sequenze NBA.
+
+| Metodo | Copertura | RMSE |
+|---|---:|---:|
+| SAM2 solo frame iniziale | 0.923 | 17.13 px |
+| **SAM2 + ri-detection** | **0.945** | **14.31 px** |
+| SAM2 + ri-detection + correttore temporale | 0.934 | 15.50 px |
+
+La ri-detection migliora la copertura e riduce l'errore di localizzazione.
+
+Il correttore temporale basato sull'altezza delle bounding box non produce invece un miglioramento dell'accuratezza nel test considerato.
+
+### E4 — Rilevamento della palla
+
+È stato addestrato un detector YOLO11s dedicato alla palla, utilizzando dati Roboflow e fotogrammi NBA annotati manualmente.
+
+| Modello | AP50 | AP50:95 | Recall | FPS |
+|---|---:|---:|---:|---:|
+| COCO sports ball | 0.095 | 0.066 | 0.024 | 40.6 |
+| Detector multi-classe, 640 px | 0.508 | 0.257 | 0.470 | 49.2 |
+| Detector multi-classe, 1280 px | 0.409 | 0.313 | 0.458 | 41.0 |
+| **Detector dedicato, 1280 px** | **0.768** | **0.485** | **0.675** | **56.3** |
+
+Il detector dedicato migliora sensibilmente il rilevamento della palla sul test NBA considerato.
+
+Il test utilizza fotogrammi temporalmente separati, ma provenienti dalla stessa partita impiegata per la preparazione dei dati di addestramento.
+
+### Riconoscimento degli eventi
+
+Le regole sono state valutate confrontando gli eventi riconosciuti automaticamente con annotazioni manuali.
+
+L'associazione utilizza tipologia dell'evento e tolleranza temporale di un secondo.
+
+| Configurazione | Precision | Recall | F1 |
+|---|---:|---:|---:|
+| Sviluppo, regole v3 | 0.90 | 0.65 | **0.75** |
+| **Test cieco, regole v3** | 0.69 | 0.39 | **0.50** |
+| Revisione v4 dopo il test | 0.67 | 0.43 | 0.53 |
+
+Il test cieco utilizza sequenze non impiegate per lo sviluppo delle regole.
+
+La revisione v4 è stata realizzata dopo l'analisi degli errori sul test e viene pertanto riportata separatamente.
+
+Le principali difficoltà riguardano il rilevamento della palla, la stima del possesso e i cambi di inquadratura.
+
+### Applicazione a riprese dilettantistiche
+
+La pipeline è stata applicata anche a due differenti scenari amatoriali.
+
+**DR3 Pomezia – Aprilia**
+
+- Ripresa fissa grandangolare a 854×480 pixel.
+- Calibrazione manuale con correzione della distorsione.
+- Valutazione del rilevamento dei giocatori.
+- Analisi dei limiti dovuti alla bassa risoluzione.
+- Ricostruzione e ricucitura delle tracce.
+
+Il rilevamento della palla risulta particolarmente difficile a causa delle dimensioni ridotte dell'oggetto nell'immagine.
+
+**Frosinone – Pomezia**
+
+- Ripresa con telecamera automatica a 1280×720 pixel.
+- Analisi delle variazioni dell'inquadratura.
+- Calibrazione manuale con propagazione temporale.
+- Valutazione di un detector alternativo per il pallone FIBA.
+- Riconoscimento di eventi di gioco.
+
+Il detector alternativo della palla migliora l'F1 degli eventi da 0.33 a 0.56 sulla sequenza valutata.
+
+Questi risultati hanno carattere esplorativo e dipendono dalle condizioni specifiche delle riprese considerate.
+
+---
+
+## 5. Struttura del progetto
+
+```text
+project/
+|
+|-- notebooks/
+|   |-- 09_genera_tracce_SAM2_7clip
+|   |-- 10_E1_detection_confronto
+|   |-- 11_E2_tracking_confronto
+|   |-- 12_E3_correzione_coordinate
+|   |-- 13_demo_squadre_mappa2D
+|   |-- 14_eventi_lavagna2D
+|   |-- 15_eventi_nba_v3
+|   |-- 15_eventi_nba_v4
+|   |-- 16_E4_detector_palla
+|   |-- 17_estrai_clip
+|   |-- 18_E2b_tracking_indomain
+|   |-- 19_amatoriali_FIBA
+|   `-- 20_DR3_camera_fissa
+|
+|-- scripts/
+|   |-- height_corrector.py
+|   |-- court_evaluation.py
+|   |-- thesis_tools.py
+|   |-- annotate.py
+|   `-- run_batch.py
+|
+|-- annotations/
+|   |-- annotations.csv
+|   |-- tasks.csv
+|   |-- manifest*.csv
+|   |-- eventi_manuali.csv
+|   `-- eventi_manuali_amatoriali.csv
+|
+|-- experiments/
+|   |-- E1_detection/
+|   |-- E2_tracking/
+|   |-- E3_correzione/
+|   `-- E4_ball/
+|
+|-- events/
+|-- events_nba/
+|-- events_amatoriali/
+|-- configs/
+|-- requirements.txt
+`-- README.md
+```
+
+I file video, i pesi dei modelli e gli output di grandi dimensioni non sono inclusi nel repository.
+
+La struttura mostrata riassume i componenti principali. Alcuni notebook sono disponibili in più versioni o in sottocartelle dedicate alle esecuzioni.
+
+---
+
+## 6. Notebook
+
+| Notebook | Descrizione |
 |---|---|
-| **Basketball Player Detection v18** (Roboflow, `basketball-player-detection-3-ycjdo`) | 464 train / 96 valid / 94 test; 10 classi (5 classi giocatore unificate per la valutazione) |
-| **SportsMOT** (split val, 15 sequenze di basket) | Box e ID su tutti i frame; scaricato con `trackers download sportsmot --split val` |
-| **7 clip NBA proprie** | 854×480, ≈ 29 fps, 1.320 frame; split validation (clip 01, 03, 07) / test (04, 05, 06, 08) |
-| **Annotazioni manuali** | 40 frame, 176 punti di contatto a terra, 3 sequenze consecutive per le identità |
-| **NBA Finals 2016, gara 7** | Video principale (4° quarto, 29,97 fps) e secondo video (1° quarto, 30 fps); clip di sviluppo az1–az6, clip di test test1 e test2; non inclusi |
-| **Eventi annotati** | 8 clip, 66 eventi (`annotations/eventi_manuali.csv`): 40 nelle 5 clip di sviluppo valutate, 23 nelle 2 clip di test, 3 in az3 (esclusa dalla valutazione quantitativa: oltre l'80% di non-gioco) |
-| **Frame propri per la palla** | 419 frame del video principale annotati su Roboflow (E4): 312 di addestramento, 107 di test |
-| Detector baseline | YOLO11s Roboflow `basketball-player-detection-3-ycjdo/4` |
-| Keypoint del campo | Roboflow `basketball-court-detection-2/14` |
-| SAM2 | SAM2.1 Hiera Large, fork `Gy920/segment-anything-2-real-time` (commit `e3623cd`) |
-| Campo | libreria `roboflow/sports` (branch `feat/basketball`), campo NBA o FIBA in piedi |
-| **Video dilettantistici** | DR3 Pomezia–Aprilia (854×480, camera fissa) e Frosinone–Pomezia (1280×720, AV1, Fanner Cam); non inclusi |
-| **Ground truth amatoriale** | DR3: 46 fotogrammi (giocatori, arbitri, palla); Frosinone: 77 fotogrammi del secondo tempo (solo palla) e una clip di 60 s con eventi |
-| Palla FIBA | Roboflow Universe `olympic-sk-basketball-dataset-v2/14` (RF-DETR Medium, CC BY 4.0), usato senza riaddestramento |
+| `09_genera_tracce_SAM2_7clip` | Generazione delle tracce e delle omografie sulle clip NBA |
+| `10_E1_detection_confronto` | Addestramento e valutazione dei detector |
+| `11_E2_tracking_confronto` | Confronto dei tracker e valutazione di SAM2 |
+| `12_E3_correzione_coordinate` | Valutazione della localizzazione e delle correzioni temporali |
+| `13_demo_squadre_mappa2D` | Classificazione squadre, mappa 2D, heatmap e statistiche |
+| `14_eventi_lavagna2D` | Prima implementazione del modulo eventi |
+| `15_eventi_nba_v3` | Riconoscimento degli eventi con regole v3 |
+| `15_eventi_nba_v4` | Revisione delle regole e analisi degli errori |
+| `16_E4_detector_palla` | Addestramento e confronto dei detector della palla |
+| `17_estrai_clip` | Estrazione e preparazione delle sequenze video |
+| `18_E2b_tracking_indomain` | Tracking con detector addestrato su SportsMOT |
+| `19_amatoriali_FIBA` | Analisi della ripresa con telecamera automatica |
+| `20_DR3_camera_fissa` | Analisi della ripresa grandangolare fissa |
 
-## 7. Come riprodurre gli esperimenti
+I notebook possono essere eseguiti principalmente su Google Colab. Alcune procedure di valutazione e post-processing possono essere eseguite anche localmente.
 
-**Su Google Colab (consigliato)**
+---
 
-1. Copiare il progetto in `MyDrive/Tesi_Basket` (con `videos/`, `annotations/`, `models/`).
-2. Aggiungere il Secret `ROBOFLOW_API_KEY` (icona a forma di chiave a sinistra) per dataset e modelli Roboflow.
-3. Aprire il notebook, eseguire la **prima cella** (pip), poi **Runtime → Riavvia sessione**, poi eseguire dalla seconda cella.
-4. Ordine consigliato: `10` → `09` → `11` → `12` → `13` → `16` → `17` → `15` → `18` → `20` → `19`. Le celle saltano automaticamente il lavoro già fatto (training, detection, tracce).
-5. Notebook 19 e 20: la calibrazione si fa cliccando i punti nelle celle B1b (20) e 4M (19); i punti restano salvati su Drive. Ogni clip va tagliata con un **nome nuovo**: i calcoli intermedi sono in cache nella cartella della clip.
+## 7. Dataset e modelli
 
-**In locale (notebook 12)**
+### Dataset
+
+| Dataset | Utilizzo |
+|---|---|
+| Basketball Player Detection v18 | Fine-tuning e valutazione dei detector |
+| SportsMOT | Valutazione quantitativa del Multi-Object Tracking |
+| Clip NBA annotate | Valutazione della localizzazione e test applicativi |
+| NBA Finals 2016 | Rilevamento della palla e riconoscimento degli eventi |
+| Riprese amatoriali | Valutazione del sistema in condizioni di acquisizione differenti |
+
+### Modelli principali
+
+**Detection giocatori**
+- YOLO11n/s/m
+- RT-DETR-L
+
+**Tracking**
+- SORT
+- ByteTrack
+- OC-SORT
+- BoT-SORT
+- C-BIoU
+- SAM2.1 Hiera Large
+
+**Detection della palla**
+- YOLO11s dedicato
+- Modelli alternativi per il pallone FIBA
+
+**Court Detection**
+- Modello di rilevamento dei keypoint del campo.
+- Omografia con RANSAC.
+
+### Risorse esterne
+
+- [SportsMOT](https://github.com/MCG-NJU/SportsMOT)
+- [Ultralytics](https://github.com/ultralytics/ultralytics)
+- [SAM2](https://github.com/facebookresearch/sam2)
+- [Roboflow](https://roboflow.com/)
+- [OpenCV](https://opencv.org/)
+
+Alcuni dataset e modelli richiedono il download dalle rispettive piattaforme.
+
+---
+
+## 8. Installazione ed esecuzione
+
+### Requisiti
+
+- Python 3.
+- Ambiente Jupyter o Google Colab.
+- GPU NVIDIA consigliata per detection, tracking e segmentazione.
+- Dipendenze Python indicate in `requirements.txt`.
+
+### Installazione locale
+
+Clonare il repository:
+
+```bash
+git clone https://github.com/Marco-2298/tesi-basket.git
+cd tesi-basket
+```
+
+Creare un ambiente virtuale:
+
+```bash
+python -m venv .venv
+```
+
+Attivarlo su Linux o macOS:
+
+```bash
+source .venv/bin/activate
+```
+
+Oppure su Windows:
 
 ```powershell
-cd "F:\Tesi Basket"
-.\.venv-eval\Scripts\activate
+.venv\Scripts\activate
+```
+
+Installare le dipendenze:
+
+```bash
 pip install -r requirements.txt
 ```
-In VS Code selezionare il kernel `.venv-eval`.
 
-**GPU**
+### Esecuzione con Google Colab
 
-- T4: sufficiente per detector, tracker e demo; SAM2 funziona grazie all’attenzione a blocchi, ma è lento.
-- L4: consigliata per SAM2 (Flash Attention, picco di memoria ≈ 3 GB).
-- Gli FPS vanno sempre riportati indicando la GPU.
+1. Rendere disponibili i file del progetto nell'ambiente Colab.
+2. Configurare i percorsi dei dataset, dei video e dei modelli.
+3. Impostare `ROBOFLOW_API_KEY` nei Secret di Colab, quando necessario.
+4. Eseguire la cella iniziale di installazione delle dipendenze.
+5. Riavviare il runtime, se richiesto.
+6. Eseguire le celle del notebook selezionato.
 
-## 8. Problemi tecnici noti e soluzioni
+I notebook fanno uso di output intermedi salvati su disco per evitare di ripetere operazioni computazionalmente costose.
 
-| Problema | Causa | Soluzione |
-|---|---|---|
-| Out-of-memory di SAM2 + ri-detection su T4 | Kernel di attenzione “math” (head dim 256) su GPU pre-Ampere | Attenzione calcolata a blocchi di query, oppure GPU L4 |
-| Kernel che si chiude (Segmentation fault) nel notebook 13 | Import di `triton` incompatibile con PyTorch dopo i pip install | `sys.modules['triton'] = None` prima degli import; niente `inference` nel pip della demo |
-| `ImportError` di Pillow (`_Ink`) su Colab | Pacchetti aggiornati in una sessione già avviata | pip → Riavvia sessione → seconda cella |
-| Conflitto `inference-gpu` / `supervision` | Versioni incompatibili | `inference` + `supervision==0.30.9` |
-| Array read-only con pandas 3 | Copy-on-write | Copie esplicite con `np.array` |
-| Notebook 09 lento | Modelli Roboflow su CPU (onnxruntime) | Accettato; i tempi non sono usati come misura di velocità |
-| Palla trovata in pochi frame e scambiata con altro | Detector multi-classe a 640 px, palla di 5–10 px | Detector dedicato a 1280 px (E4) + filtro di Kalman |
-| Falsi cambi di punteggio | Dissolvenze e deriva della grafica del tabellone | Riferimento a maggioranza su 1,5 s |
-| Falsi tagli di scena | Flash dei fotografi, movimenti rapidi della telecamera | Limite documentato (11 tagli falsi su 13 in az6); sviluppo futuro |
-| ID diversi tra esecuzioni | Contatore degli ID che sopravvive nella sessione | Riavvio della sessione prima di ogni esecuzione completa |
-| Video YouTube non letti da OpenCV | Codifica AV1 | Fotogrammi letti con ffmpeg; clip ricodificate in H.264 a 30 fps |
-| Omografia sbagliata a Frosinone | Il modello dei keypoint scambia i campi laterali per quello principale | Calibrazione manuale con propagazione (celle 4M) |
-| Risultati mescolati tra due clip | Clip ritagliata con lo stesso nome: detection e omografie in cache riusate | Un nome nuovo per ogni clip |
-| Modelli Roboflow lenti (circa 8 s per fotogramma) | `onnxruntime` su CPU | Palla calcolata una volta per clip (cella D0), anche sul server di Roboflow |
+### Ordine di esecuzione consigliato
 
-## 9. Limiti
+```text
+10 - Detection
+ |
+ v
+09 - Generazione tracce
+ |
+ v
+11 - Tracking
+ |
+ +--> 12 - Localizzazione
+ |
+ +--> 13 - Demo e visualizzazioni
+ |
+ +--> 16 - Detector della palla
+          |
+          v
+     15 - Modulo eventi
+```
 
-- Campione proprio piccolo (7 clip, 1.320 frame); annotazioni a punti, quindi niente metriche MOT complete in E3.
-- SAM2 valutato sui primi 300 frame di ogni sequenza SportsMOT; tracker con parametri di default.
-- Omografia non validata con corrispondenze indipendenti (inlier ed errore di fit sono solo diagnostici).
-- SAM2 + ri-detection può creare maschere doppie sullo stesso giocatore; BoT-SORT scambia gli avversari nelle occlusioni.
-- Distanze e velocità della demo non validate: vanno lette come stime qualitative.
-- Eventi valutati su poche clip di una sola partita (63 eventi valutati, 23 nel test), annotati da una sola persona: i risultati sugli eventi sono preliminari, uno studio di caso.
-- Distanze, velocità e heatmap sono dimostrazioni applicative: l'omografia non è validata con misure indipendenti, quindi non sono misure fisiche certificate.
-- Il tabellone è letto con coordinate fisse per la grafica ESPN di questa partita.
-- La provenienza del dataset Roboflow v18 non è documentata.
-- Riprese dilettantistiche: campioni piccoli (46 + 77 fotogrammi, una clip di 60 s con 13 eventi), annotati da una sola persona; annotazione degli eventi amatoriali non cieca: l'F1 amatoriale è indicativo.
+Gli esperimenti aggiuntivi sul tracking in-domain e sulle riprese amatoriali possono essere eseguiti separatamente.
 
-## 10. Stato del lavoro e sviluppi
+### GPU
 
-| Attività | Stato |
+| GPU | Utilizzo |
 |---|---|
-| E1 – confronto detector | ✅ completato |
-| E2 – confronto tracker + SAM2 (15 sequenze) | ✅ completato |
-| E3 – correzione coordinate (f0 e redet) | ✅ completato |
-| Demo squadre / mappa 2D / heatmap (BoT-SORT vs SAM2) | ✅ completata |
-| E4 – detector della palla | ✅ completato |
-| E2b – tracking in-domain | ✅ completato |
-| Riprese dilettantistiche: DR3 (notebook 20) | ✅ completato |
-| Riprese dilettantistiche: Frosinone (notebook 19) | ✅ completato |
-| Immagine della pipeline completa (`pipeline_progetto.png`) | ✅ completata |
-| Eventi di gioco: regole v1 → v4, valutazione di sviluppo e test cieco | ✅ completato |
-| Stesura della tesi (LaTeX) | ⏳ dal 10 novembre 2026 |
+| NVIDIA T4 | Detection, tracker classici e demo |
+| NVIDIA L4 | SAM2 e modelli più impegnativi |
+| CPU | Analisi dei risultati e alcune procedure di post-processing |
 
-Sviluppi futuri: rilevatore di tagli di scena robusto a flash e movimenti di camera, correttore temporale adattivo, controllo delle maschere doppie dopo la ri-detection, tracking affidabile della palla, riconoscimento delle azioni, OCR dei numeri di maglia; fine-tuning della palla sul pallone FIBA (dataset pubblico «Fiba Basketball»), controllo di coerenza dell'omografia e keypoint per palestre con più campi, verifica dei requisiti con una camera a 1080p nella stessa posizione della DR3.
-
-## 11. Riferimenti
-
-Metodi e strumenti principali (riferimenti completi nella bibliografia della tesi):
-
-- Ultralytics YOLO11; RT-DETR (detector transformer real-time)
-- SORT, ByteTrack, OC-SORT, BoT-SORT, C-BIoU; libreria Roboflow `trackers`
-- SAM2 – Segment Anything Model 2 (Meta AI)
-- SportsMOT (dataset multi-object tracking sportivo)
-- HOTA, CLEAR-MOT (MOTA), IDF1
-- Roboflow `inference`, `supervision`, `sports`
-- Omografia piana con RANSAC (OpenCV)
+Le prestazioni in FPS dipendono dall'hardware e dalle condizioni di esecuzione.
 
 ---
 
-_Il codice è sviluppato per scopi di ricerca nell’ambito della tesi. I video delle partite NBA non sono inclusi nella repository._
+## 9. Problemi tecnici noti
+
+| Problema | Possibile causa | Soluzione |
+|---|---|---|
+| Out-of-memory con SAM2 | Elevato consumo di memoria nell'attenzione | Attenzione a blocchi oppure GPU L4 |
+| Crash del kernel dopo l'installazione | Conflitti tra librerie | Riavviare il runtime |
+| Conflitti tra `inference` e `supervision` | Versioni non compatibili | Utilizzare le versioni previste dall'ambiente |
+| Rilevamento incompleto della palla | Dimensioni ridotte e movimento rapido | Detector dedicato a risoluzione elevata |
+| Scambi di identità | Occlusioni e vicinanza tra giocatori | Controlli temporali e analisi delle tracce |
+| Maschere duplicate con SAM2 | Ri-detection di giocatori già seguiti | Filtraggio delle osservazioni duplicate |
+| Omografia non corretta | Keypoint mancanti o rilevati erroneamente | Calibrazione manuale |
+| Falsi cambi di inquadratura | Flash e movimenti rapidi | Revisione dei criteri di scene detection |
+| Video AV1 non leggibili | Supporto codec limitato | Estrazione con FFmpeg |
+| Risultati intermedi non aggiornati | Riutilizzo della cache | Separare gli output per sequenza |
+
+---
+
+## 10. Limitazioni
+
+Il sistema presenta alcune limitazioni da considerare nell'interpretazione dei risultati.
+
+**Tracking**
+
+Le occlusioni, gli spostamenti rapidi e le variazioni di inquadratura possono generare frammentazioni e scambi di identità.
+
+**Localizzazione**
+
+L'omografia permette di ottenere coordinate nel sistema di riferimento del campo, ma non garantisce automaticamente un'elevata accuratezza metrica.
+
+**Statistiche spaziali**
+
+Le stime di distanza e velocità dipendono dalla qualità delle tracce e delle coordinate. Non sono state validate mediante sistemi indipendenti di misurazione.
+
+**Riconoscimento degli eventi**
+
+Il modulo utilizza regole temporali e dipende dalla qualità del rilevamento della palla e della stima del possesso.
+
+La valutazione degli eventi è stata effettuata su un numero limitato di sequenze e non permette di generalizzare automaticamente i risultati a partite differenti.
+
+**Riprese amatoriali**
+
+Risoluzione, illuminazione, geometria del campo e caratteristiche del pallone possono influenzare significativamente le prestazioni.
+
+---
+
+## 11. Sviluppi futuri
+
+Tra le possibili estensioni del progetto:
+
+- Miglioramento del rilevamento dei cambi di inquadratura.
+- Re-identificazione dei giocatori dopo occlusioni prolungate.
+- Riduzione delle maschere duplicate generate da SAM2.
+- Tracking della palla più robusto e continuo.
+- Miglioramento delle regole di riconoscimento degli eventi.
+- Riconoscimento dei numeri di maglia mediante OCR.
+- Validazione metrica delle coordinate sul campo.
+- Supporto a differenti configurazioni di telecamera.
+- Adattamento dei modelli a riprese amatoriali.
+- Ottimizzazione della pipeline per ridurre il costo computazionale.
+
+---
+
+## 12. Tecnologie e riferimenti
+
+### Framework e librerie
+
+- PyTorch
+- Ultralytics
+- OpenCV
+- Roboflow
+- Supervision
+- NumPy
+- Pandas
+- Scikit-learn
+- Matplotlib
+- FFmpeg
+
+### Algoritmi e modelli
+
+- YOLO11
+- RT-DETR
+- SAM2
+- SORT
+- ByteTrack
+- OC-SORT
+- BoT-SORT
+- C-BIoU
+- K-means
+- RANSAC
+- Filtro di Kalman
+
+### Metriche
+
+- AP50 e AP50:95
+- Precision, Recall, F1-score
+- HOTA
+- MOTA
+- IDF1
+- DetA e AssA
+- RMSE
+
+---
+
+## Note
+
+Il progetto è destinato alla sperimentazione e all'analisi di tecniche di Computer Vision applicate al basket.
+
+I video delle partite utilizzati durante lo sviluppo non sono distribuiti nel repository. L'accesso a dataset, modelli e materiali di terze parti è soggetto alle rispettive licenze e condizioni d'uso.
+
+I risultati pubblicati fanno riferimento alle specifiche configurazioni sperimentali descritte e non garantiscono prestazioni equivalenti su video differenti.
