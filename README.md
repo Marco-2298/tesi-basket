@@ -1,11 +1,26 @@
 
 # Basketball Video Analysis with Computer Vision
 
-Sistema di analisi automatica delle partite di basket basato su **Computer Vision e Deep Learning**, sviluppato per rilevare e tracciare i giocatori, ricostruirne le posizioni sul campo e riconoscere alcuni eventi di gioco a partire da riprese video.
+### Tesi di Laurea Magistrale in Ingegneria Informatica
 
-Il progetto integra modelli di Object Detection, algoritmi di Multi-Object Tracking, segmentazione video, trasformazioni geometriche e regole temporali per ottenere informazioni sugli spostamenti dei giocatori e sull'evoluzione delle azioni.
+**Università degli Studi Roma Tre**  
+**Autore:** Marco D'Albis  
+**Relatore:** Prof. Giuseppe Sansonetti  
+**Anno accademico:** 2025/2026
+
+---
+
+## Descrizione
+
+Sistema di analisi automatica delle partite di basket basato su **Computer Vision e Deep Learning**, sviluppato per rilevare e tracciare i giocatori, ricostruirne le posizioni sul campo e riconoscere eventi di gioco a partire da riprese video.
+
+Il progetto integra modelli di Object Detection, algoritmi di Multi-Object Tracking, segmentazione video, trasformazioni geometriche e regole temporali.
 
 L'analisi è stata sviluppata principalmente su riprese televisive NBA e successivamente sperimentata su video di partite dilettantistiche con differenti condizioni di acquisizione.
+
+L'obiettivo è studiare la possibilità di ottenere informazioni spaziali e statistiche da riprese monocamera, senza richiedere infrastrutture professionali di tracking.
+
+Il sistema è un **prototipo sperimentale**, non un prodotto destinato all'utilizzo professionale.
 
 ---
 
@@ -28,8 +43,6 @@ L'analisi è stata sviluppata principalmente su riprese televisive NBA e success
 
 ## 1. Panoramica
 
-L'obiettivo è estrarre automaticamente informazioni utili all'analisi delle partite di basket utilizzando riprese monocamera, senza richiedere sistemi professionali di tracking installati negli impianti sportivi.
-
 La pipeline affronta cinque problemi principali:
 
 - **Player Detection:** individuazione dei giocatori nei fotogrammi.
@@ -38,67 +51,44 @@ La pipeline affronta cinque problemi principali:
 - **Spatial Analytics:** classificazione delle squadre, traiettorie, heatmap e statistiche di movimento.
 - **Event Recognition:** riconoscimento di tiri, canestri, passaggi, rimbalzi, palle rubate e rimesse.
 
-Sono state confrontate differenti architetture e configurazioni per analizzarne accuratezza, robustezza e costo computazionale.
+Sono state confrontate differenti architetture e configurazioni per valutarne accuratezza, robustezza e costo computazionale.
 
-Il sistema è modulare: i componenti di detection, tracking e localizzazione possono essere sostituiti e valutati separatamente.
+La struttura è modulare: i componenti di detection, tracking e localizzazione possono essere sostituiti e valutati separatamente.
+
+### Obiettivi del progetto
+
+- Analizzare video di basket attraverso tecniche di Computer Vision.
+- Confrontare detector e algoritmi di tracking.
+- Ricostruire le posizioni dei giocatori sul campo.
+- Generare rappresentazioni tattiche e statistiche spaziali.
+- Riconoscere automaticamente alcuni eventi di gioco.
+- Studiare la trasferibilità del sistema dalle riprese NBA ai video dilettantistici.
+- Individuare le principali fonti di errore e i limiti delle tecniche utilizzate.
 
 ---
 
 ## 2. Architettura del sistema
 
-La pipeline combina diversi moduli di elaborazione.
+La pipeline integra diversi moduli di elaborazione, organizzati in modo da utilizzare le informazioni visive per ricostruire le traiettorie e analizzare gli eventi di gioco.
 
-```text
-                  VIDEO DI BASKET
-                         |
-             Estrazione dei fotogrammi
-                         |
-          +--------------+--------------+
-          |              |              |
-          v              v              v
-     Detection       Court Keypoint   Ball Detection
-     giocatori        Detection        YOLO11s
-          |              |              |
-          v              v              v
-     Multi-Object      Omografia      Ball Tracking
-       Tracking         RANSAC        e filtraggio
-          |              |              |
-          +------+-------+              |
-                 |                      |
-                 v                      |
-        Posizioni giocatori             |
-           sul campo 2D                 |
-                 |                      |
-          +------+------+               |
-          |             |               |
-          v             v               |
-     Classificazione  Traiettorie       |
-       squadre       e statistiche      |
-          |             |               |
-          +------+------+---------------+
-                 |
-                 v
-          Stima del possesso
-                 |
-                 v
-       Riconoscimento eventi
-                 |
-       +---------+----------+
-       |                    |
-       v                    v
-  Statistiche          Lavagna tattica
-  e timeline                 2D
-```
+### Schema generale della pipeline
+
+![Architettura della pipeline](pipeline_generale.png)
+
+*Architettura generale del sistema di analisi video del basket, con i principali moduli di elaborazione e gli adattamenti per le riprese amatoriali.*
 
 ### Object Detection
 
-Per il rilevamento dei giocatori sono stati valutati:
+Per il rilevamento dei giocatori sono state valutate diverse architetture:
 
-- YOLO11n, YOLO11s e YOLO11m.
-- RT-DETR-L.
-- Modelli preaddestrati e modelli sottoposti a fine-tuning.
+- YOLO11n
+- YOLO11s
+- YOLO11m
+- RT-DETR-L
 
-Il rilevamento della palla utilizza un detector dedicato YOLO11s, addestrato a risoluzione 1280 pixel.
+Sono stati confrontati modelli preaddestrati e modelli sottoposti a fine-tuning su dataset specifici del basket.
+
+Per il rilevamento della palla è stato sviluppato un detector dedicato **YOLO11s**, addestrato e valutato anche a una risoluzione di ingresso di 1280 pixel.
 
 ### Multi-Object Tracking
 
@@ -112,7 +102,7 @@ Sono stati confrontati cinque algoritmi tracking-by-detection:
 
 È stata inoltre sviluppata una configurazione basata su **SAM2.1 Hiera Large**, che utilizza la propagazione temporale delle maschere.
 
-Per SAM2 è stata implementata una strategia di **ri-detection periodica**, che consente di introdurre nella sequenza giocatori non presenti nel fotogramma iniziale.
+Per SAM2 è stata implementata una strategia di **ri-detection periodica**, finalizzata a introdurre giocatori non presenti nel fotogramma iniziale e a migliorare la copertura delle tracce.
 
 ### Ricostruzione spaziale
 
@@ -120,11 +110,24 @@ Le posizioni dei giocatori vengono trasformate dal sistema di coordinate dell'im
 
 1. Rilevamento di 33 keypoint del terreno di gioco.
 2. Stima dell'omografia mediante RANSAC.
-3. Estrazione del punto rappresentativo del contatto con il terreno.
-4. Proiezione sul campo 2D.
+3. Individuazione di un punto rappresentativo del contatto con il terreno.
+4. Proiezione sul campo bidimensionale.
 5. Filtraggio temporale delle coordinate.
 
-La ricostruzione permette di utilizzare coordinate espresse nel sistema di riferimento del campo per realizzare visualizzazioni e statistiche di movimento.
+Le coordinate ricostruite vengono utilizzate per generare visualizzazioni tattiche e statistiche di movimento.
+
+### Riconoscimento degli eventi
+
+Il modulo eventi utilizza le informazioni prodotte da:
+
+- Detection e tracking dei giocatori.
+- Detection e tracking della palla.
+- Stima del possesso.
+- Analisi delle variazioni del punteggio.
+- Rilevamento dei cambi di inquadratura.
+- Regole temporali.
+
+L'integrazione di queste informazioni permette di individuare alcune tipologie di azione e costruire una timeline degli eventi riconosciuti.
 
 ---
 
@@ -132,30 +135,32 @@ La ricostruzione permette di utilizzare coordinate espresse nel sistema di rifer
 
 ### 3.1 Rilevamento e tracking dei giocatori
 
-Il sistema associa a ciascun giocatore un identificativo temporale, utilizzato per ricostruirne la traiettoria.
+Il sistema associa a ciascun giocatore un identificativo temporale per ricostruirne la traiettoria.
 
 Sono presenti procedure di post-processing per:
 
 - Interpolare brevi interruzioni delle tracce.
 - Individuare rilevazioni duplicate.
 - Escludere posizioni non affidabili.
-- Riconoscere alcuni scambi di identità tra giocatori di squadre differenti.
+- Segnalare possibili scambi di identità tra giocatori di squadre differenti.
+
+Le occlusioni e i cambi di inquadratura possono comunque determinare frammentazioni e scambi di identità.
 
 ### 3.2 Classificazione delle squadre
 
 La classificazione utilizza le caratteristiche cromatiche delle divise.
 
-Le informazioni vengono estratte dalla regione del busto, rappresentate mediante istogrammi nello spazio colore Lab e aggregate per traccia.
+Le informazioni vengono estratte dalla regione del busto e rappresentate mediante istogrammi nello spazio colore Lab.
 
-Successivamente viene applicato K-means con due cluster.
+Le osservazioni vengono aggregate per traccia e raggruppate attraverso **K-means con due cluster**.
 
-Un controllo temporale permette di individuare cambiamenti persistenti del colore associato a una traccia, potenzialmente causati da scambi di identità.
+Un controllo temporale consente inoltre di individuare cambiamenti persistenti del colore associato a una traccia, potenzialmente causati da scambi di identità.
 
 ### 3.3 Mappa bidimensionale
 
 I giocatori vengono rappresentati su un campo NBA osservato dall'alto.
 
-La visualizzazione mostra:
+La visualizzazione comprende:
 
 - Posizioni aggiornate nel tempo.
 - Squadra di appartenenza.
@@ -182,18 +187,9 @@ Le coordinate proiettate sul campo consentono di stimare:
 
 Per ridurre l'influenza degli errori di localizzazione vengono applicati filtri temporali e controlli sugli spostamenti anomali.
 
-Queste statistiche sono indicative e non sono state validate rispetto a dati ufficiali di tracking.
+**Nota:** queste statistiche sono indicative e non sono state validate rispetto a misurazioni indipendenti o dati ufficiali di tracking.
 
 ### 3.6 Riconoscimento degli eventi
-
-Il modulo eventi combina:
-
-- Detection e tracking dei giocatori.
-- Detection della palla.
-- Stima del possesso.
-- Analisi del punteggio.
-- Rilevamento dei cambi di inquadratura.
-- Regole temporali per identificare le azioni.
 
 Gli eventi considerati comprendono:
 
@@ -204,23 +200,26 @@ Gli eventi considerati comprendono:
 - Palle rubate.
 - Rimesse.
 
+Il riconoscimento si basa su regole temporali e sulle relazioni tra posizione della palla, giocatori e possesso.
+
 ### 3.7 Lavagna tattica
 
-La lavagna tattica rappresenta gli eventi riconosciuti su un campo bidimensionale.
+La lavagna tattica rappresenta gli eventi su un campo bidimensionale.
 
 Sono disponibili due modalità:
 
-**Automatica:** gli eventi sono generati dalla pipeline.
-
-**Manuale:** gli eventi sono letti da un file CSV, mentre le coordinate vengono recuperate dalle tracce dei giocatori.
-
-La visualizzazione permette di confrontare gli eventi riconosciuti automaticamente con quelli annotati manualmente.
+- **Automatica:** gli eventi vengono generati dalla pipeline.
+- **Manuale:** gli eventi vengono letti da un file CSV e associati alle coordinate ricostruite.
 
 Sono inoltre disponibili video diagnostici, timeline del possesso e riepiloghi statistici.
 
 ---
 
 ## 4. Risultati sperimentali
+
+Gli esperimenti sono stati organizzati per valutare separatamente le principali componenti della pipeline.
+
+I risultati riportati si riferiscono ai dataset, alle configurazioni e ai protocolli specifici descritti nella tesi.
 
 ### E1 — Confronto dei detector
 
@@ -234,12 +233,14 @@ I modelli sono stati valutati sul test set di Roboflow Basketball Player Detecti
 | **RT-DETR-L fine-tuned** | 0.823 | **0.708** | 14.6 |
 | YOLO11s COCO | 0.486 | 0.547 | 75.9 |
 
-**Osservazioni principali**
+**Osservazioni principali:**
 
 - Il fine-tuning migliora le prestazioni sul dataset Roboflow.
-- YOLO11m raggiunge la migliore AP50:95 in-domain.
-- RT-DETR-L ottiene il risultato migliore sui dati SportsMOT.
-- YOLO11m offre un compromesso più favorevole tra accuratezza e costo computazionale.
+- YOLO11m raggiunge la migliore AP50:95 sul test Roboflow.
+- RT-DETR-L ottiene il risultato migliore sul test SportsMOT.
+- YOLO11m offre un compromesso favorevole tra accuratezza e costo computazionale.
+
+Le misure FPS sono riferite alle specifiche configurazioni sperimentali utilizzate su GPU NVIDIA T4.
 
 ### E2 — Multi-Object Tracking
 
@@ -252,9 +253,11 @@ La valutazione tracking-by-detection utilizza 15 sequenze di basket SportsMOT, p
 | YOLO11m + BoT-SORT | 0.518 | 0.905 | 0.557 |
 | YOLO11s COCO + BoT-SORT | 0.381 | 0.620 | 0.387 |
 
+RT-DETR-L con BoT-SORT ottiene la migliore HOTA e IDF1 tra le configurazioni riportate.
+
 #### Confronto con SAM2
 
-Per consentire il confronto con SAM2, la valutazione è stata ripetuta sui primi 300 fotogrammi delle 15 sequenze.
+Per confrontare i tracker tradizionali con SAM2, la valutazione è stata ripetuta sui primi 300 fotogrammi delle 15 sequenze.
 
 | Metodo | HOTA | AssA | IDF1 | ID Switch |
 |---|---:|---:|---:|---:|
@@ -263,11 +266,13 @@ Per consentire il confronto con SAM2, la valutazione è stata ripetuta sui primi
 | RT-DETR-L + BoT-SORT | 0.676 | 0.611 | 0.775 | 249 |
 | YOLO11m + BoT-SORT | 0.654 | 0.574 | 0.766 | 244 |
 
-SAM2 ottiene una maggiore continuità delle identità rispetto alle configurazioni tracking-by-detection valutate, ma presenta un costo computazionale elevato.
+SAM2 ottiene risultati migliori nelle metriche di tracking considerate sul sottoinsieme valutato, ma presenta un costo computazionale elevato.
 
-La configurazione con ri-detection raggiunge circa 1,4 FPS su GPU NVIDIA L4.
+La configurazione con ri-detection raggiunge circa **1,4 FPS su GPU NVIDIA L4**.
 
-La ri-detection migliora la copertura dei giocatori rispetto all'inizializzazione esclusiva nel primo fotogramma, con un incremento di 0.021 HOTA.
+Rispetto all'inizializzazione esclusiva nel primo fotogramma, la ri-detection migliora la HOTA di 0.021, pur aumentando il numero di ID switch.
+
+I risultati non devono essere confrontati direttamente con quelli della tabella precedente, poiché i protocolli utilizzano quantità differenti di fotogrammi.
 
 ### E2b — Tracking con addestramento in-domain
 
@@ -283,9 +288,9 @@ La ri-detection migliora la copertura dei giocatori rispetto all'inizializzazion
 
 *Valori HOTA.*
 
-L'addestramento sui dati SportsMOT produce un miglioramento delle prestazioni di tracking per tutti gli algoritmi considerati.
+L'addestramento sui dati SportsMOT migliora le prestazioni per tutti gli algoritmi considerati.
 
-Il confronto evidenzia l'importanza del dominio dei dati di addestramento, pur non isolandone completamente l'effetto da quello delle altre configurazioni di training.
+Il confronto evidenzia l'importanza del dominio di addestramento, pur non isolandone completamente l'effetto dalle altre differenze tra le configurazioni di training.
 
 ### E3 — Localizzazione e correzione delle coordinate
 
@@ -297,9 +302,9 @@ La valutazione è stata effettuata su punti di contatto con il terreno annotati 
 | **SAM2 + ri-detection** | **0.945** | **14.31 px** |
 | SAM2 + ri-detection + correttore temporale | 0.934 | 15.50 px |
 
-La ri-detection migliora la copertura e riduce l'errore di localizzazione.
+La ri-detection migliora la copertura e riduce l'errore di localizzazione nel test considerato.
 
-Il correttore temporale basato sull'altezza delle bounding box non produce invece un miglioramento dell'accuratezza nel test considerato.
+Il correttore temporale basato sull'altezza delle bounding box non produce invece un miglioramento dell'accuratezza in questa valutazione.
 
 ### E4 — Rilevamento della palla
 
@@ -320,7 +325,7 @@ Il test utilizza fotogrammi temporalmente separati, ma provenienti dalla stessa 
 
 Le regole sono state valutate confrontando gli eventi riconosciuti automaticamente con annotazioni manuali.
 
-L'associazione utilizza tipologia dell'evento e tolleranza temporale di un secondo.
+L'associazione considera la tipologia dell'evento e una tolleranza temporale di un secondo.
 
 | Configurazione | Precision | Recall | F1 |
 |---|---:|---:|---:|
@@ -330,15 +335,20 @@ L'associazione utilizza tipologia dell'evento e tolleranza temporale di un secon
 
 Il test cieco utilizza sequenze non impiegate per lo sviluppo delle regole.
 
-La revisione v4 è stata realizzata dopo l'analisi degli errori sul test e viene pertanto riportata separatamente.
+La revisione v4 è stata realizzata dopo l'analisi degli errori sul test e viene riportata separatamente.
 
-Le principali difficoltà riguardano il rilevamento della palla, la stima del possesso e i cambi di inquadratura.
+Le principali difficoltà riguardano:
+
+- Rilevamento incompleto della palla.
+- Errori nella stima del possesso.
+- Cambi di inquadratura non riconosciuti o rilevati erroneamente.
+- Propagazione degli errori dalle fasi precedenti.
 
 ### Applicazione a riprese dilettantistiche
 
-La pipeline è stata applicata anche a due differenti scenari amatoriali.
+La pipeline è stata applicata a due differenti scenari amatoriali.
 
-**DR3 Pomezia – Aprilia**
+#### DR3 Pomezia – Aprilia
 
 - Ripresa fissa grandangolare a 854×480 pixel.
 - Calibrazione manuale con correzione della distorsione.
@@ -348,7 +358,7 @@ La pipeline è stata applicata anche a due differenti scenari amatoriali.
 
 Il rilevamento della palla risulta particolarmente difficile a causa delle dimensioni ridotte dell'oggetto nell'immagine.
 
-**Frosinone – Pomezia**
+#### Frosinone – Pomezia
 
 - Ripresa con telecamera automatica a 1280×720 pixel.
 - Analisi delle variazioni dell'inquadratura.
@@ -356,7 +366,7 @@ Il rilevamento della palla risulta particolarmente difficile a causa delle dimen
 - Valutazione di un detector alternativo per il pallone FIBA.
 - Riconoscimento di eventi di gioco.
 
-Il detector alternativo della palla migliora l'F1 degli eventi da 0.33 a 0.56 sulla sequenza valutata.
+Il detector alternativo della palla migliora l'F1 degli eventi da **0.33 a 0.56** sulla sequenza valutata.
 
 Questi risultati hanno carattere esplorativo e dipendono dalle condizioni specifiche delle riprese considerate.
 
@@ -364,8 +374,13 @@ Questi risultati hanno carattere esplorativo e dipendono dalle condizioni specif
 
 ## 5. Struttura del progetto
 
+La struttura principale del repository è riassunta di seguito.
+
 ```text
-project/
+tesi-basket/
+|
+|-- assets/
+|   `-- pipeline.png
 |
 |-- notebooks/
 |   |-- 09_genera_tracce_SAM2_7clip
@@ -410,9 +425,11 @@ project/
 `-- README.md
 ```
 
+La cartella `assets/` è prevista per le immagini utilizzate nella documentazione e deve essere creata se non ancora presente.
+
 I file video, i pesi dei modelli e gli output di grandi dimensioni non sono inclusi nel repository.
 
-La struttura mostrata riassume i componenti principali. Alcuni notebook sono disponibili in più versioni o in sottocartelle dedicate alle esecuzioni.
+La struttura mostrata riassume i componenti principali. Alcuni notebook possono essere disponibili in più versioni o in sottocartelle dedicate alle esecuzioni.
 
 ---
 
@@ -434,7 +451,11 @@ La struttura mostrata riassume i componenti principali. Alcuni notebook sono dis
 | `19_amatoriali_FIBA` | Analisi della ripresa con telecamera automatica |
 | `20_DR3_camera_fissa` | Analisi della ripresa grandangolare fissa |
 
-I notebook possono essere eseguiti principalmente su Google Colab. Alcune procedure di valutazione e post-processing possono essere eseguite anche localmente.
+I notebook sono stati sviluppati principalmente per l'esecuzione in ambienti Jupyter e Google Colab.
+
+Alcune procedure di valutazione e post-processing possono essere eseguite anche localmente.
+
+**Nota sulla riproducibilità:** diversi notebook dipendono da file intermedi, dataset, modelli addestrati e percorsi configurati durante lo sviluppo. Non tutti gli esperimenti possono essere eseguiti direttamente dopo la sola clonazione del repository.
 
 ---
 
@@ -445,18 +466,20 @@ I notebook possono essere eseguiti principalmente su Google Colab. Alcune proced
 | Dataset | Utilizzo |
 |---|---|
 | Basketball Player Detection v18 | Fine-tuning e valutazione dei detector |
-| SportsMOT | Valutazione quantitativa del Multi-Object Tracking |
+| SportsMOT | Addestramento e valutazione del Multi-Object Tracking |
 | Clip NBA annotate | Valutazione della localizzazione e test applicativi |
 | NBA Finals 2016 | Rilevamento della palla e riconoscimento degli eventi |
-| Riprese amatoriali | Valutazione del sistema in condizioni di acquisizione differenti |
+| Riprese amatoriali | Valutazione in condizioni di acquisizione differenti |
 
 ### Modelli principali
 
 **Detection giocatori**
+
 - YOLO11n/s/m
 - RT-DETR-L
 
 **Tracking**
+
 - SORT
 - ByteTrack
 - OC-SORT
@@ -465,12 +488,14 @@ I notebook possono essere eseguiti principalmente su Google Colab. Alcune proced
 - SAM2.1 Hiera Large
 
 **Detection della palla**
+
 - YOLO11s dedicato
 - Modelli alternativi per il pallone FIBA
 
 **Court Detection**
+
 - Modello di rilevamento dei keypoint del campo.
-- Omografia con RANSAC.
+- Omografia mediante RANSAC.
 
 ### Risorse esterne
 
@@ -480,7 +505,7 @@ I notebook possono essere eseguiti principalmente su Google Colab. Alcune proced
 - [Roboflow](https://roboflow.com/)
 - [OpenCV](https://opencv.org/)
 
-Alcuni dataset e modelli richiedono il download dalle rispettive piattaforme.
+Alcuni dataset e modelli richiedono il download dalle rispettive piattaforme e l'accettazione delle relative condizioni d'uso.
 
 ---
 
@@ -492,6 +517,8 @@ Alcuni dataset e modelli richiedono il download dalle rispettive piattaforme.
 - Ambiente Jupyter o Google Colab.
 - GPU NVIDIA consigliata per detection, tracking e segmentazione.
 - Dipendenze Python indicate in `requirements.txt`.
+
+La compatibilità dipende dalle versioni delle librerie e dall'ambiente di esecuzione.
 
 ### Installazione locale
 
@@ -535,91 +562,104 @@ pip install -r requirements.txt
 5. Riavviare il runtime, se richiesto.
 6. Eseguire le celle del notebook selezionato.
 
-I notebook fanno uso di output intermedi salvati su disco per evitare di ripetere operazioni computazionalmente costose.
+I notebook utilizzano output intermedi salvati su disco per evitare di ripetere operazioni computazionalmente costose.
 
-### Ordine di esecuzione consigliato
+### Flusso di lavoro indicativo
+
+Il progetto comprende notebook dedicati a differenti fasi di elaborazione:
 
 ```text
-10 - Detection
+10 - Addestramento e confronto detector
  |
  v
-09 - Generazione tracce
+09 - Generazione tracce e omografie
  |
- v
-11 - Tracking
+ +--> 11 - Valutazione tracking
  |
- +--> 12 - Localizzazione
+ +--> 12 - Valutazione localizzazione
  |
  +--> 13 - Demo e visualizzazioni
  |
  +--> 16 - Detector della palla
           |
           v
-     15 - Modulo eventi
+     15 - Riconoscimento eventi
 ```
 
-Gli esperimenti aggiuntivi sul tracking in-domain e sulle riprese amatoriali possono essere eseguiti separatamente.
+Lo schema rappresenta le principali dipendenze concettuali e non una procedura completamente automatizzata.
 
-### GPU
+Gli esperimenti sul tracking in-domain e sulle riprese amatoriali possono essere eseguiti separatamente, predisponendo i relativi dati.
+
+### GPU utilizzate
 
 | GPU | Utilizzo |
 |---|---|
 | NVIDIA T4 | Detection, tracker classici e demo |
 | NVIDIA L4 | SAM2 e modelli più impegnativi |
-| CPU | Analisi dei risultati e alcune procedure di post-processing |
+| CPU | Analisi dei risultati e post-processing |
 
-Le prestazioni in FPS dipendono dall'hardware e dalle condizioni di esecuzione.
+Le prestazioni in FPS dipendono dall'hardware, dalla configurazione dei modelli e dalle condizioni di esecuzione.
 
 ---
 
 ## 9. Problemi tecnici noti
 
-| Problema | Possibile causa | Soluzione |
+| Problema | Possibile causa | Intervento |
 |---|---|---|
-| Out-of-memory con SAM2 | Elevato consumo di memoria nell'attenzione | Attenzione a blocchi oppure GPU L4 |
-| Crash del kernel dopo l'installazione | Conflitti tra librerie | Riavviare il runtime |
-| Conflitti tra `inference` e `supervision` | Versioni non compatibili | Utilizzare le versioni previste dall'ambiente |
-| Rilevamento incompleto della palla | Dimensioni ridotte e movimento rapido | Detector dedicato a risoluzione elevata |
+| Out-of-memory con SAM2 | Elevato consumo di memoria | Attenzione a blocchi o GPU con maggiore memoria |
+| Crash del kernel dopo l'installazione | Conflitti tra librerie | Riavvio del runtime |
+| Conflitti tra `inference` e `supervision` | Versioni non compatibili | Utilizzo delle versioni previste dall'ambiente |
+| Rilevamento incompleto della palla | Dimensioni ridotte e movimento rapido | Detector dedicato ad alta risoluzione |
 | Scambi di identità | Occlusioni e vicinanza tra giocatori | Controlli temporali e analisi delle tracce |
 | Maschere duplicate con SAM2 | Ri-detection di giocatori già seguiti | Filtraggio delle osservazioni duplicate |
-| Omografia non corretta | Keypoint mancanti o rilevati erroneamente | Calibrazione manuale |
+| Omografia errata | Keypoint mancanti o non corretti | Calibrazione manuale |
 | Falsi cambi di inquadratura | Flash e movimenti rapidi | Revisione dei criteri di scene detection |
-| Video AV1 non leggibili | Supporto codec limitato | Estrazione con FFmpeg |
-| Risultati intermedi non aggiornati | Riutilizzo della cache | Separare gli output per sequenza |
+| Video AV1 non leggibili | Supporto codec limitato | Conversione con FFmpeg |
+| Risultati intermedi non aggiornati | Riutilizzo della cache | Separazione degli output per sequenza |
+
+Gli interventi riportati sono soluzioni utilizzate o possibili strategie di mitigazione, non garanzie di risoluzione in ogni ambiente.
 
 ---
 
 ## 10. Limitazioni
 
-Il sistema presenta alcune limitazioni da considerare nell'interpretazione dei risultati.
+Il sistema presenta limitazioni che devono essere considerate nell'interpretazione dei risultati.
 
-**Tracking**
+### Tracking
 
 Le occlusioni, gli spostamenti rapidi e le variazioni di inquadratura possono generare frammentazioni e scambi di identità.
 
-**Localizzazione**
+SAM2 offre risultati promettenti nelle sequenze valutate, ma richiede risorse computazionali elevate.
 
-L'omografia permette di ottenere coordinate nel sistema di riferimento del campo, ma non garantisce automaticamente un'elevata accuratezza metrica.
+### Localizzazione
 
-**Statistiche spaziali**
+L'omografia permette di ricostruire coordinate nel sistema di riferimento del campo, ma non garantisce automaticamente un'elevata accuratezza metrica.
 
-Le stime di distanza e velocità dipendono dalla qualità delle tracce e delle coordinate. Non sono state validate mediante sistemi indipendenti di misurazione.
+Le posizioni dipendono dalla qualità dei keypoint, dalla geometria della ripresa e dalla stima del punto di contatto con il terreno.
 
-**Riconoscimento degli eventi**
+### Statistiche spaziali
+
+Le stime di distanza e velocità dipendono dalla qualità delle tracce e delle coordinate.
+
+Non sono state validate mediante sistemi indipendenti di misurazione.
+
+### Riconoscimento degli eventi
 
 Il modulo utilizza regole temporali e dipende dalla qualità del rilevamento della palla e della stima del possesso.
 
-La valutazione degli eventi è stata effettuata su un numero limitato di sequenze e non permette di generalizzare automaticamente i risultati a partite differenti.
+La valutazione è stata effettuata su un numero limitato di sequenze e non consente di generalizzare automaticamente i risultati a partite differenti.
 
-**Riprese amatoriali**
+### Riprese amatoriali
 
-Risoluzione, illuminazione, geometria del campo e caratteristiche del pallone possono influenzare significativamente le prestazioni.
+Risoluzione, illuminazione, distorsione geometrica, movimento della telecamera e caratteristiche del pallone possono influenzare significativamente le prestazioni.
+
+I risultati sui video dilettantistici devono essere considerati esplorativi.
 
 ---
 
 ## 11. Sviluppi futuri
 
-Tra le possibili estensioni del progetto:
+Le principali direzioni di sviluppo comprendono:
 
 - Miglioramento del rilevamento dei cambi di inquadratura.
 - Re-identificazione dei giocatori dopo occlusioni prolungate.
@@ -629,8 +669,11 @@ Tra le possibili estensioni del progetto:
 - Riconoscimento dei numeri di maglia mediante OCR.
 - Validazione metrica delle coordinate sul campo.
 - Supporto a differenti configurazioni di telecamera.
-- Adattamento dei modelli a riprese amatoriali.
-- Ottimizzazione della pipeline per ridurre il costo computazionale.
+- Fine-tuning dei modelli su riprese amatoriali e palloni FIBA.
+- Ottimizzazione computazionale della pipeline.
+- Ampliamento dei dataset di valutazione.
+
+Tra le priorità rientra anche la valutazione su più partite e condizioni di ripresa, per verificare la generalizzazione dei risultati.
 
 ---
 
@@ -663,10 +706,10 @@ Tra le possibili estensioni del progetto:
 - RANSAC
 - Filtro di Kalman
 
-### Metriche
+### Metriche utilizzate
 
 - AP50 e AP50:95
-- Precision, Recall, F1-score
+- Precision, Recall e F1-score
 - HOTA
 - MOTA
 - IDF1
@@ -675,10 +718,30 @@ Tra le possibili estensioni del progetto:
 
 ---
 
+## Tesi e documentazione
+
+**Titolo:** Tecniche di Computer Vision per l'Analisi Automatica di Video di Basket
+
+**Autore:** Marco D'Albis
+
+**Università:** Università degli Studi Roma Tre
+
+**Corso:** Laurea Magistrale in Ingegneria Informatica
+
+**Relatore:** Prof. Giuseppe Sansonetti
+
+**Anno accademico:** 2025/2026
+
+Il repository raccoglie il codice, i notebook sperimentali e parte della documentazione utilizzata durante lo sviluppo della tesi.
+
+---
+
 ## Note
 
 Il progetto è destinato alla sperimentazione e all'analisi di tecniche di Computer Vision applicate al basket.
 
-I video delle partite utilizzati durante lo sviluppo non sono distribuiti nel repository. L'accesso a dataset, modelli e materiali di terze parti è soggetto alle rispettive licenze e condizioni d'uso.
+I video delle partite utilizzati durante lo sviluppo non sono distribuiti nel repository.
+
+L'accesso a dataset, modelli e materiali di terze parti è soggetto alle rispettive licenze e condizioni d'uso.
 
 I risultati pubblicati fanno riferimento alle specifiche configurazioni sperimentali descritte e non garantiscono prestazioni equivalenti su video differenti.
