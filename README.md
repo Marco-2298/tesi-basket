@@ -1,4 +1,3 @@
-
 # Basketball Video Analysis with Computer Vision
 
 ### Tesi di Laurea Magistrale in Ingegneria Informatica
@@ -156,6 +155,8 @@ Le osservazioni vengono aggregate per traccia e raggruppate attraverso **K-means
 
 Un controllo temporale consente inoltre di individuare cambiamenti persistenti del colore associato a una traccia, potenzialmente causati da scambi di identità.
 
+La correttezza della classificazione è stata verificata su una ground truth costruita a mano sui punti annotati delle clip NBA (vedi [Verifica della classificazione delle squadre](#verifica-della-classificazione-delle-squadre)).
+
 ### 3.3 Mappa bidimensionale
 
 I giocatori vengono rappresentati su un campo NBA osservato dall'alto.
@@ -306,6 +307,19 @@ La ri-detection migliora la copertura e riduce l'errore di localizzazione nel te
 
 Il correttore temporale basato sull'altezza delle bounding box non produce invece un miglioramento dell'accuratezza in questa valutazione.
 
+### Verifica della classificazione delle squadre
+
+La classificazione delle squadre della demo (notebook 13) è stata verificata annotando a mano la squadra sui 176 punti utilizzati in E3, distribuiti in 40 fotogrammi delle 7 clip NBA. Il metodo è stato applicato senza modifiche alle tracce SAM2 + ri-detection, con lo stesso matching di E3.
+
+| Livello | Corretti | Accuratezza (IC95%) |
+|---|---:|---:|
+| Tracce | 55 / 64 | 0.86 (0.75–0.92) |
+| Punti | 145 / 166 | 0.87 (0.81–0.92) |
+
+Gli errori si concentrano in una clip (`clip_08`, 11 punti corretti su 24), dove le maglie rosse di una squadra vengono in parte assegnate alla squadra con la divisa scura; nelle altre sei clip l'accuratezza sui punti è 0.94. Gli altri errori riguardano soprattutto giocatori sovrapposti a un avversario.
+
+Il campione è ridotto e i punti della stessa traccia non sono indipendenti: il risultato va considerato indicativo.
+
 ### E4 — Rilevamento della palla
 
 È stato addestrato un detector YOLO11s dedicato alla palla, utilizzando dati Roboflow e fotogrammi NBA annotati manualmente.
@@ -395,7 +409,8 @@ tesi-basket/
 |   |-- 17_estrai_clip
 |   |-- 18_E2b_tracking_indomain
 |   |-- 19_amatoriali_FIBA
-|   `-- 20_DR3_camera_fissa
+|   |-- 20_DR3_camera_fissa
+|   `-- 21_valutazione_squadre
 |
 |-- scripts/
 |   |-- height_corrector.py
@@ -408,6 +423,7 @@ tesi-basket/
 |   |-- annotations.csv
 |   |-- tasks.csv
 |   |-- manifest*.csv
+|   |-- team_labels.csv
 |   |-- eventi_manuali.csv
 |   `-- eventi_manuali_amatoriali.csv
 |
@@ -415,7 +431,8 @@ tesi-basket/
 |   |-- E1_detection/
 |   |-- E2_tracking/
 |   |-- E3_correzione/
-|   `-- E4_ball/
+|   |-- E4_ball/
+|   `-- verifica_squadre/
 |
 |-- events/
 |-- events_nba/
@@ -450,6 +467,7 @@ La struttura mostrata riassume i componenti principali. Alcuni notebook possono 
 | `18_E2b_tracking_indomain` | Tracking con detector addestrato su SportsMOT |
 | `19_amatoriali_FIBA` | Analisi della ripresa con telecamera automatica |
 | `20_DR3_camera_fissa` | Analisi della ripresa grandangolare fissa |
+| `21_valutazione_squadre` | Verifica della classificazione delle squadre sui punti annotati di E3 |
 
 I notebook sono stati sviluppati principalmente per l'esecuzione in ambienti Jupyter e Google Colab.
 
@@ -636,6 +654,10 @@ SAM2 offre risultati promettenti nelle sequenze valutate, ma richiede risorse co
 L'omografia permette di ricostruire coordinate nel sistema di riferimento del campo, ma non garantisce automaticamente un'elevata accuratezza metrica.
 
 Le posizioni dipendono dalla qualità dei keypoint, dalla geometria della ripresa e dalla stima del punto di contatto con il terreno.
+
+### Classificazione delle squadre
+
+La verifica è stata effettuata su un campione ridotto, senza arbitri tra i punti annotati e sulle tracce SAM2 anziché su quelle BoT-SORT del modulo eventi. Combinazioni di colori poco contrastanti e giocatori sovrapposti possono causare assegnazioni errate.
 
 ### Statistiche spaziali
 

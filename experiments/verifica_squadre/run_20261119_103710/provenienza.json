@@ -1,0 +1,17 @@
+{
+  "created": "2026-11-19T10:37:51.475878",
+  "config": {
+    "variant": "redet",
+    "gate_px": 80.0,
+    "interp_max_gap": 20,
+    "dup_iou": 0.7,
+    "split_on_team_change": true,
+    "split_min_samples": 5,
+    "outlier_k": 3.0
+  },
+  "inputs": {
+    "manifest_sam2_redet.csv": "e4214b400a9df993c1aaf495eb91f3faf2bb660113b8c52913bc2476c1676574",
+    "annotations.csv": "c42631ea64668f466941c3e12972346f15a1d4bc5430c16388f3ed7f0746b043",
+    "team_labels.csv": "fe801ec41221609a4ee1616e6dffec817ebd08109a6968b80b1ef12a633254ad"
+  }
+}
